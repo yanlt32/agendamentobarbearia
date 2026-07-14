@@ -1,0 +1,102 @@
+<%- include('../partials/site-head') %>
+<%- include('../partials/site-nav') %>
+
+<section class="booking-section">
+  <div class="container">
+    <div class="text-center mb-5 pt-4">
+      <p class="eyebrow gold-text">Agendamento online</p>
+      <h1 class="section-title">Marque seu horario</h1>
+    </div>
+
+    <%- include('../partials/flash') %>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <div class="booking-steps mb-4">
+          <div class="step active" data-step="1"><span>1</span>Servico</div>
+          <div class="step" data-step="2"><span>2</span>Barbeiro</div>
+          <div class="step" data-step="3"><span>3</span>Data</div>
+          <div class="step" data-step="4"><span>4</span>Horario</div>
+          <div class="step" data-step="5"><span>5</span>Seus dados</div>
+        </div>
+
+        <form action="/agendar" method="POST" id="bookingForm" class="booking-card">
+          <input type="hidden" name="service_id" id="service_id" required>
+          <input type="hidden" name="barber_id" id="barber_id" required>
+          <input type="hidden" name="time" id="time_input" required>
+
+          <!-- STEP 1: SERVICO -->
+          <div class="booking-pane" data-pane="1">
+            <h5 class="mb-3">Escolha o servico</h5>
+            <div class="row g-3">
+              <% services.forEach(function(s) { %>
+                <div class="col-md-6">
+                  <div class="choice-card" data-select="service" data-id="<%= s.id %>" data-name="<%= s.name %>">
+                    <div class="d-flex justify-content-between">
+                      <strong><%= s.name %></strong>
+                      <span class="gold-text">R$ <%= s.price.toFixed(2).replace('.', ',') %></span>
+                    </div>
+                    <small class="text-secondary"><%= s.duration_minutes %> min</small>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- STEP 2: BARBEIRO -->
+          <div class="booking-pane d-none" data-pane="2">
+            <h5 class="mb-3">Escolha o barbeiro</h5>
+            <div class="row g-3" id="barberList"></div>
+          </div>
+
+          <!-- STEP 3: DATA -->
+          <div class="booking-pane d-none" data-pane="3">
+            <h5 class="mb-3">Escolha a data</h5>
+            <input type="date" class="form-control form-control-lg" id="date_input" name="date"
+                   min="<%= minDate %>" max="<%= maxDate %>" required>
+          </div>
+
+          <!-- STEP 4: HORARIO -->
+          <div class="booking-pane d-none" data-pane="4">
+            <h5 class="mb-3">Escolha o horario</h5>
+            <div id="timeSlots" class="time-slots"></div>
+          </div>
+
+          <!-- STEP 5: DADOS -->
+          <div class="booking-pane d-none" data-pane="5">
+            <h5 class="mb-3">Seus dados</h5>
+            <div class="mb-3">
+              <label class="form-label">Nome completo *</label>
+              <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Telefone (WhatsApp) *</label>
+              <input type="text" name="phone" id="phone_input" class="form-control" placeholder="(00) 00000-0000" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email (opcional)</label>
+              <input type="email" name="email" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Observacoes</label>
+              <textarea name="notes" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="summary-box p-3 mb-3">
+              <p class="mb-1"><strong>Resumo:</strong></p>
+              <p class="mb-0 small text-secondary" id="summaryText"></p>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-outline-light" id="btnPrev" disabled>Voltar</button>
+            <button type="button" class="btn btn-gold" id="btnNext">Proximo</button>
+            <button type="submit" class="btn btn-gold d-none" id="btnSubmit">Confirmar Agendamento</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/site-footer') %>
+<script src="/js/booking.js"></script>

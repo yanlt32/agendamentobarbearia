@@ -1,0 +1,119 @@
+<%- include('../partials/admin-head') %>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-gold"><i class="fa-regular fa-calendar-check"></i></div>
+      <div>
+        <p class="stat-label">Agendamentos hoje</p>
+        <h3 class="stat-value"><%= stats.todayCount %></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-blue"><i class="fa-solid fa-calendar-days"></i></div>
+      <div>
+        <p class="stat-label">Agendamentos no mes</p>
+        <h3 class="stat-value"><%= stats.monthCount %></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-green"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div>
+        <p class="stat-label">Faturamento hoje</p>
+        <h3 class="stat-value">R$ <%= stats.todayRevenue.toFixed(2).replace('.', ',') %></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-purple"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+      <div>
+        <p class="stat-label">Faturamento no mes</p>
+        <h3 class="stat-value">R$ <%= stats.monthRevenue.toFixed(2).replace('.', ',') %></h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-blue"><i class="fa-solid fa-users"></i></div>
+      <div><p class="stat-label">Total de clientes</p><h3 class="stat-value"><%= stats.totalClients %></h3></div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-green"><i class="fa-solid fa-user-plus"></i></div>
+      <div><p class="stat-label">Clientes novos (mes)</p><h3 class="stat-value"><%= stats.newClientsMonth %></h3></div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-gold"><i class="fa-solid fa-receipt"></i></div>
+      <div><p class="stat-label">Ticket medio</p><h3 class="stat-value">R$ <%= stats.avgTicket.toFixed(2).replace('.', ',') %></h3></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-7">
+    <div class="panel">
+      <h6 class="panel-title">Faturamento (ultimos 14 dias)</h6>
+      <canvas id="chartRevenue" height="130"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <h6 class="panel-title">Servicos mais vendidos (mes)</h6>
+      <canvas id="chartServices" height="130"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-7">
+    <div class="panel">
+      <h6 class="panel-title">Agendamentos por mes</h6>
+      <canvas id="chartAppointments" height="110"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <h6 class="panel-title">Proximos clientes</h6>
+      <% if (upcoming.length === 0) { %>
+        <p class="text-secondary small mb-0">Nenhum agendamento futuro.</p>
+      <% } %>
+      <ul class="list-unstyled upcoming-list mb-0">
+        <% upcoming.forEach(function(a) { %>
+          <li>
+            <div>
+              <strong><%= a.client_name %></strong>
+              <div class="small text-secondary"><%= a.service_name %> com <%= a.barber_name %></div>
+            </div>
+            <div class="text-end">
+              <span class="badge-gold"><%= a.date %></span>
+              <div class="small text-secondary"><%= a.time %></div>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  const revenueLabels = <%- JSON.stringify(revenueSeries.map(r => r.date)) %>;
+  const revenueData = <%- JSON.stringify(revenueSeries.map(r => r.total)) %>;
+  const serviceLabels = <%- JSON.stringify(topServices.map(s => s.name)) %>;
+  const serviceData = <%- JSON.stringify(topServices.map(s => s.total)) %>;
+  const monthLabels = <%- JSON.stringify(appointmentsByMonth.map(m => m.ym)) %>;
+  const monthData = <%- JSON.stringify(appointmentsByMonth.map(m => m.total)) %>;
+</script>
+<script src="/js/dashboard.js"></script>
+
+<%- include('../partials/admin-footer') %>

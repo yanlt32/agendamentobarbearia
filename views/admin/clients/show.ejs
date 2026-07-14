@@ -1,0 +1,44 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-4">
+    <div class="panel text-center">
+      <div class="barber-photo mx-auto mb-3"><i class="fa-solid fa-user"></i></div>
+      <h5 class="mb-1"><%= client.name %></h5>
+      <p class="text-secondary small mb-3"><%= client.phone %><% if (client.email) { %> &bull; <%= client.email %><% } %></p>
+      <div class="d-flex justify-content-around mb-3">
+        <div><h4 class="gold-text mb-0"><%= client.visits_count %></h4><small class="text-secondary">Visitas</small></div>
+        <div><h6 class="mb-0"><%= client.last_visit || '-' %></h6><small class="text-secondary">Ultimo atendimento</small></div>
+      </div>
+      <% if (client.notes) { %><p class="small text-secondary text-start"><strong>Obs:</strong> <%= client.notes %></p><% } %>
+      <a href="/admin/clients/<%= client.id %>/edit" class="btn btn-gold btn-sm w-100 mt-2">Editar cadastro</a>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="panel">
+      <h6 class="panel-title">Historico de atendimentos</h6>
+      <div class="table-responsive">
+        <table class="table table-admin align-middle">
+          <thead><tr><th>Data</th><th>Hora</th><th>Servico</th><th>Barbeiro</th><th>Valor</th><th>Status</th></tr></thead>
+          <tbody>
+            <% history.forEach(function(h) { %>
+              <tr>
+                <td><%= h.date %></td>
+                <td><%= h.time %></td>
+                <td><%= h.service_name %></td>
+                <td><%= h.barber_name %></td>
+                <td>R$ <%= h.price.toFixed(2).replace('.', ',') %></td>
+                <td><span class="status-badge status-<%= h.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado'})[h.status] %></span></td>
+              </tr>
+            <% }) %>
+            <% if (history.length === 0) { %>
+              <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum atendimento registrado.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

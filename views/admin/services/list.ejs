@@ -1,0 +1,35 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="d-flex justify-content-end mb-3">
+  <a href="/admin/services/new" class="btn btn-gold btn-sm"><i class="fa-solid fa-plus me-1"></i>Novo Servico</a>
+</div>
+
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table table-admin align-middle">
+      <thead><tr><th>Nome</th><th>Categoria</th><th>Preco</th><th>Duracao</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <% services.forEach(function(s) { %>
+          <tr>
+            <td><%= s.name %><br><small class="text-secondary"><%= s.description || '' %></small></td>
+            <td><%= s.category || '-' %></td>
+            <td>R$ <%= s.price.toFixed(2).replace('.', ',') %></td>
+            <td><%= s.duration_minutes %> min</td>
+            <td><span class="status-badge <%= s.active ? 'status-confirmed' : 'status-cancelled' %>"><%= s.active ? 'Ativo' : 'Inativo' %></span></td>
+            <td class="text-end">
+              <a href="/admin/services/<%= s.id %>/edit" class="btn-icon" title="Editar"><i class="fa-solid fa-pen"></i></a>
+              <form action="/admin/services/<%= s.id %>/delete" method="POST" class="d-inline confirm-form" data-confirm="Excluir este servico?">
+                <button type="submit" class="btn-icon text-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (services.length === 0) { %>
+          <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum servico cadastrado.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

@@ -1,0 +1,55 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="panel" style="max-width:760px;">
+  <form action="/admin/settings" method="POST" enctype="multipart/form-data">
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label">Nome da barbearia</label>
+        <input type="text" name="shop_name" class="form-control" value="<%= settings.shop_name %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Logo</label>
+        <input type="file" name="logo" class="form-control" accept="image/*">
+        <% if (settings.logo) { %><img src="<%= settings.logo %>" class="mt-2 rounded" height="50"><% } %>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Tema</label>
+        <select name="theme" class="form-select">
+          <option value="dark" <%= settings.theme === 'dark' ? 'selected' : '' %>>Escuro</option>
+          <option value="light" <%= settings.theme === 'light' ? 'selected' : '' %>>Claro</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Telefone</label>
+        <input type="text" name="phone" class="form-control" value="<%= settings.phone %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">WhatsApp (DDI+DDD+numero)</label>
+        <input type="text" name="whatsapp" class="form-control" value="<%= settings.whatsapp %>" placeholder="5511999999999">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Instagram (URL)</label>
+        <input type="text" name="instagram" class="form-control" value="<%= settings.instagram %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Facebook (URL)</label>
+        <input type="text" name="facebook" class="form-control" value="<%= settings.facebook %>">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Endereco</label>
+        <input type="text" name="address" class="form-control" value="<%= settings.address %>">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Google Maps (iframe embed - opcional)</label>
+        <textarea name="maps_embed" class="form-control" rows="2" placeholder="<iframe ...></iframe>"><%= settings.maps_embed %></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Sobre a barbearia</label>
+        <textarea name="about_text" class="form-control" rows="3"><%= settings.about_text %></textarea>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-gold mt-4">Salvar configuracoes</button>
+  </form>
+</div>
+
+<%- include('../../partials/admin-footer') %>

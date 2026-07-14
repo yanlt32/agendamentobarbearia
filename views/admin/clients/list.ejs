@@ -1,0 +1,55 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="panel mb-4">
+  <form class="row g-2 align-items-end" method="GET" action="/admin/clients">
+    <div class="col-8 col-md-4">
+      <label class="form-label small">Buscar por nome, telefone ou email</label>
+      <input type="text" name="search" class="form-control form-control-sm" value="<%= filters.search || '' %>">
+    </div>
+    <div class="col-2 col-md-2">
+      <button class="btn btn-gold btn-sm w-100" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+    <div class="col-2 col-md-2">
+      <a href="/admin/clients/new" class="btn btn-outline-light btn-sm w-100"><i class="fa-solid fa-plus me-1"></i>Novo</a>
+    </div>
+  </form>
+</div>
+
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table table-admin align-middle">
+      <thead><tr><th>Nome</th><th>Telefone</th><th>Email</th><th>Visitas</th><th>Ultimo atendimento</th><th></th></tr></thead>
+      <tbody>
+        <% rows.forEach(function(c) { %>
+          <tr>
+            <td><a href="/admin/clients/<%= c.id %>" class="link-gold"><%= c.name %></a></td>
+            <td><%= c.phone %></td>
+            <td><%= c.email || '-' %></td>
+            <td><%= c.visits_count %></td>
+            <td><%= c.last_visit || '-' %></td>
+            <td class="text-end">
+              <a href="/admin/clients/<%= c.id %>/edit" class="btn-icon" title="Editar"><i class="fa-solid fa-pen"></i></a>
+              <form action="/admin/clients/<%= c.id %>/delete" method="POST" class="d-inline confirm-form" data-confirm="Excluir este cliente?">
+                <button type="submit" class="btn-icon text-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (rows.length === 0) { %>
+          <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum cliente encontrado.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+  <% if (totalPages > 1) { %>
+    <nav class="mt-3">
+      <ul class="pagination pagination-sm justify-content-center">
+        <% for (let p = 1; p <= totalPages; p++) { %>
+          <li class="page-item <%= p === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= p %>&search=<%= filters.search || '' %>"><%= p %></a></li>
+        <% } %>
+      </ul>
+    </nav>
+  <% } %>
+</div>
+
+<%- include('../../partials/admin-footer') %>

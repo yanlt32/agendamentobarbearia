@@ -1,0 +1,34 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="panel" style="max-width:600px;">
+  <form action="<%= client ? '/admin/clients/' + client.id : '/admin/clients' %>" method="POST">
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label">Nome *</label>
+        <input type="text" name="name" class="form-control" required value="<%= client ? client.name : '' %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Telefone *</label>
+        <input type="text" name="phone" class="form-control phone-mask" required value="<%= client ? client.phone : '' %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" value="<%= client ? (client.email || '') : '' %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Data de nascimento</label>
+        <input type="date" name="birth_date" class="form-control" value="<%= client ? (client.birth_date || '') : '' %>">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Observacoes</label>
+        <textarea name="notes" class="form-control" rows="3"><%= client ? (client.notes || '') : '' %></textarea>
+      </div>
+    </div>
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-gold">Salvar</button>
+      <a href="/admin/clients" class="btn btn-outline-light">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../../partials/admin-footer') %>

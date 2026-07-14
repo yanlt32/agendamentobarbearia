@@ -1,0 +1,95 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="panel mb-4">
+  <form class="row g-2 align-items-end" method="GET" action="/admin/financial">
+    <div class="col-6 col-md-3">
+      <label class="form-label small">Periodo</label>
+      <select name="period" class="form-select form-select-sm">
+        <option value="day" <%= period === 'day' ? 'selected' : '' %>>Hoje</option>
+        <option value="week" <%= period === 'week' ? 'selected' : '' %>>Esta semana</option>
+        <option value="month" <%= period === 'month' ? 'selected' : '' %>>Este mes</option>
+        <option value="year" <%= period === 'year' ? 'selected' : '' %>>Este ano</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small">De</label>
+      <input type="date" name="from" class="form-control form-control-sm" value="<%= from || '' %>">
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small">Ate</label>
+      <input type="date" name="to" class="form-control form-control-sm" value="<%= to || '' %>">
+    </div>
+    <div class="col-6 col-md-2">
+      <button type="submit" class="btn btn-gold btn-sm w-100">Filtrar</button>
+    </div>
+    <div class="col-6 col-md-3 text-end">
+      <a class="btn btn-outline-light btn-sm" href="/admin/financial/export.csv?period=<%= period %>&from=<%= from || '' %>&to=<%= to || '' %>"><i class="fa-solid fa-file-csv me-1"></i>Exportar CSV</a>
+      <button type="button" class="btn btn-outline-light btn-sm" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Imprimir</button>
+    </div>
+  </form>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="stat-icon bg-green"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div><p class="stat-label">Faturamento (<%= report.label %>)</p><h3 class="stat-value">R$ <%= report.revenue.toFixed(2).replace('.', ',') %></h3></div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="stat-icon bg-blue"><i class="fa-regular fa-calendar-check"></i></div>
+      <div><p class="stat-label">Atendimentos</p><h3 class="stat-value"><%= report.count %></h3></div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="stat-icon bg-gold"><i class="fa-solid fa-receipt"></i></div>
+      <div><p class="stat-label">Ticket medio</p><h3 class="stat-value">R$ <%= report.avgTicket.toFixed(2).replace('.', ',') %></h3></div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="stat-icon bg-purple"><i class="fa-solid fa-user-plus"></i></div>
+      <div><p class="stat-label">Clientes novos</p><h3 class="stat-value"><%= report.newClients %></h3></div></div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-7">
+    <div class="panel">
+      <h6 class="panel-title">Faturamento no periodo</h6>
+      <canvas id="chartRevenue" height="120"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <h6 class="panel-title">Servicos mais vendidos</h6>
+      <canvas id="chartServices" height="120"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <h6 class="panel-title">Atendimentos finalizados</h6>
+  <div class="table-responsive">
+    <table class="table table-admin align-middle">
+      <thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Barbeiro</th><th>Servico</th><th>Valor</th></tr></thead>
+      <tbody>
+        <% report.completedList.forEach(function(a) { %>
+          <tr>
+            <td><%= a.date %></td><td><%= a.time %></td><td><%= a.client_name %></td>
+            <td><%= a.barber_name %></td><td><%= a.service_name %></td>
+            <td>R$ <%= a.price.toFixed(2).replace('.', ',') %></td>
+          </tr>
+        <% }) %>
+        <% if (report.completedList.length === 0) { %>
+          <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum atendimento finalizado no periodo.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const revLabels = <%- JSON.stringify(report.revenueSeries.map(r => r.date)) %>;
+  const revData = <%- JSON.stringify(report.revenueSeries.map(r => r.total)) %>;
+  const svcLabels = <%- JSON.stringify(report.topServices.map(s => s.name)) %>;
+  const svcData = <%- JSON.stringify(report.topServices.map(s => s.revenue || 0)) %>;
+</script>
+<script src="/js/financial.js"></script>
+
+<%- include('../../partials/admin-footer') %>

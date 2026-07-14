@@ -1,0 +1,10 @@
+<% if (typeof successMsg !== 'undefined' && successMsg.length) { %>
+  <% successMsg.forEach(function(msg) { %>
+    <div class="toast-msg toast-success" role="alert"><i class="fa-solid fa-circle-check me-2"></i><%= msg %></div>
+  <% }) %>
+<% } %>
+<% if (typeof errorMsg !== 'undefined' && errorMsg.length) { %>
+  <% errorMsg.forEach(function(msg) { %>
+    <div class="toast-msg toast-error" role="alert"><i class="fa-solid fa-circle-exclamation me-2"></i><%= msg %></div>
+  <% }) %>
+<% } %>

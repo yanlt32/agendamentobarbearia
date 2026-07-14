@@ -1,0 +1,47 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="panel">
+      <h6 class="panel-title">Gerar backup</h6>
+      <p class="text-secondary small">Cria uma copia completa do banco de dados SQLite atual.</p>
+      <form action="/admin/backup" method="POST">
+        <button type="submit" class="btn btn-gold"><i class="fa-solid fa-database me-2"></i>Gerar backup agora</button>
+      </form>
+    </div>
+
+    <div class="panel mt-3">
+      <h6 class="panel-title">Restaurar backup</h6>
+      <p class="text-secondary small">Envie um arquivo .db para substituir o banco atual. Uma copia de seguranca sera criada automaticamente antes.</p>
+      <form action="/admin/backup/restore" method="POST" enctype="multipart/form-data" class="confirm-form" data-confirm="Restaurar ira substituir todos os dados atuais. Continuar?">
+        <input type="file" name="dbfile" accept=".db" class="form-control mb-2" required>
+        <button type="submit" class="btn btn-outline-light"><i class="fa-solid fa-rotate-left me-2"></i>Restaurar</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="panel">
+      <h6 class="panel-title">Backups disponiveis</h6>
+      <ul class="list-unstyled upcoming-list mb-0">
+        <% files.forEach(function(f) { %>
+          <li>
+            <div>
+              <strong><%= f.name %></strong>
+              <div class="small text-secondary"><%= (f.size/1024).toFixed(1) %> KB &bull; <%= new Date(f.date).toLocaleString('pt-BR') %></div>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="/admin/backup/<%= f.name %>/download" class="btn-icon" title="Baixar"><i class="fa-solid fa-download"></i></a>
+              <form action="/admin/backup/<%= f.name %>/delete" method="POST" class="confirm-form" data-confirm="Excluir este backup?">
+                <button type="submit" class="btn-icon text-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+              </form>
+            </div>
+          </li>
+        <% }) %>
+        <% if (files.length === 0) { %><li class="text-secondary small">Nenhum backup gerado ainda.</li><% } %>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

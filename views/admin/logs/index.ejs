@@ -1,0 +1,24 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table table-admin align-middle">
+      <thead><tr><th>Data/Hora</th><th>Usuario</th><th>Acao</th><th>Detalhes</th></tr></thead>
+      <tbody>
+        <% logs.forEach(function(l) { %>
+          <tr>
+            <td><%= l.created_at %></td>
+            <td><%= l.user_name || '-' %></td>
+            <td><span class="badge-gold"><%= l.action %></span></td>
+            <td class="text-secondary small"><%= l.details %></td>
+          </tr>
+        <% }) %>
+        <% if (logs.length === 0) { %>
+          <tr><td colspan="4" class="text-center text-secondary py-4">Nenhum registro encontrado.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

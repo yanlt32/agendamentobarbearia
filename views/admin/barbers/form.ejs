@@ -1,0 +1,65 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="panel" style="max-width:820px;">
+  <form action="<%= barber ? '/admin/barbers/' + barber.id : '/admin/barbers' %>" method="POST" enctype="multipart/form-data">
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Nome *</label>
+        <input type="text" name="name" class="form-control" required value="<%= barber ? barber.name : '' %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Especialidade</label>
+        <input type="text" name="specialty" class="form-control" value="<%= barber ? (barber.specialty || '') : '' %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Foto</label>
+        <input type="file" name="photo" class="form-control" accept="image/*">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="active" <%= barber && barber.status === 'active' ? 'selected' : '' %>>Ativo</option>
+          <option value="inactive" <%= barber && barber.status === 'inactive' ? 'selected' : '' %>>Inativo</option>
+        </select>
+      </div>
+    </div>
+
+    <h6 class="panel-title">Servicos realizados</h6>
+    <div class="row g-2 mb-4">
+      <% services.forEach(function(s) { %>
+        <div class="col-md-4">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="services" value="<%= s.id %>" id="svc<%= s.id %>"
+              <%= selectedServices.includes(s.id) ? 'checked' : '' %>>
+            <label class="form-check-label" for="svc<%= s.id %>"><%= s.name %></label>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <h6 class="panel-title">Horario de trabalho</h6>
+    <div class="table-responsive mb-3">
+      <table class="table table-admin align-middle">
+        <thead><tr><th>Dia</th><th>Folga</th><th>Inicio</th><th>Fim</th></tr></thead>
+        <tbody>
+          <% weekdays.forEach(function(wd) { %>
+            <% const row = schedule.find(s => s.weekday === wd.value) || {}; %>
+            <tr>
+              <td><%= wd.label %></td>
+              <td><input type="checkbox" name="is_off_<%= wd.value %>" <%= row.is_off ? 'checked' : '' %>></td>
+              <td><input type="time" name="start_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.start_time || '09:00' %>"></td>
+              <td><input type="time" name="end_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.end_time || '19:00' %>"></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-gold">Salvar</button>
+      <a href="/admin/barbers" class="btn btn-outline-light">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../../partials/admin-footer') %>

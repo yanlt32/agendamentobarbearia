@@ -1,0 +1,59 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="panel">
+      <h6 class="panel-title">Horario de funcionamento da barbearia</h6>
+      <form action="/admin/hours" method="POST">
+        <div class="table-responsive mb-3">
+          <table class="table table-admin align-middle">
+            <thead><tr><th>Dia</th><th>Aberto</th><th>Abertura</th><th>Fechamento</th></tr></thead>
+            <tbody>
+              <% hours.forEach(function(h, i) { %>
+                <tr>
+                  <td><%= weekdays[h.weekday] %></td>
+                  <td><input type="checkbox" name="is_open_<%= h.weekday %>" <%= h.is_open ? 'checked' : '' %>></td>
+                  <td><input type="time" name="open_<%= h.weekday %>" class="form-control form-control-sm" value="<%= h.open_time || '09:00' %>"></td>
+                  <td><input type="time" name="close_<%= h.weekday %>" class="form-control form-control-sm" value="<%= h.close_time || '19:00' %>"></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <div class="mb-3" style="max-width:260px;">
+          <label class="form-label small">Intervalo entre horarios (minutos)</label>
+          <select name="slot_interval_minutes" class="form-select form-select-sm">
+            <% [15,20,30,45,60].forEach(function(v) { %>
+              <option value="<%= v %>" <%= String(slotInterval) === String(v) ? 'selected' : '' %>><%= v %> minutos</option>
+            <% }) %>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-gold">Salvar horarios</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="panel">
+      <h6 class="panel-title">Feriados e bloqueios</h6>
+      <form action="/admin/hours/holidays" method="POST" class="row g-2 mb-3">
+        <div class="col-6"><input type="date" name="date" class="form-control form-control-sm" required></div>
+        <div class="col-6"><input type="text" name="description" class="form-control form-control-sm" placeholder="Descricao (opcional)"></div>
+        <div class="col-12"><button type="submit" class="btn btn-outline-light btn-sm w-100"><i class="fa-solid fa-plus me-1"></i>Bloquear data</button></div>
+      </form>
+      <ul class="list-unstyled upcoming-list mb-0">
+        <% holidays.forEach(function(h) { %>
+          <li>
+            <div><strong><%= h.date %></strong><div class="small text-secondary"><%= h.description || 'Bloqueado' %></div></div>
+            <form action="/admin/hours/holidays/<%= h.id %>/delete" method="POST" class="confirm-form" data-confirm="Remover este bloqueio?">
+              <button type="submit" class="btn-icon text-danger"><i class="fa-solid fa-trash"></i></button>
+            </form>
+          </li>
+        <% }) %>
+        <% if (holidays.length === 0) { %><li class="text-secondary small">Nenhum feriado cadastrado.</li><% } %>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

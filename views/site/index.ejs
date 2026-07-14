@@ -1,0 +1,155 @@
+<%- include('../partials/site-head') %>
+<%- include('../partials/site-nav') %>
+<%- include('../partials/flash') %>
+
+<!-- HERO -->
+<header class="hero d-flex align-items-center">
+  <div class="hero-overlay"></div>
+  <div class="container position-relative text-center text-lg-start">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <p class="eyebrow gold-text mb-2"><i class="fa-solid fa-star me-1"></i> Estilo &amp; Tradicao</p>
+        <h1 class="hero-title mb-3"><%= settings.shop_name %></h1>
+        <p class="hero-subtitle mb-4">Cortes de precisao, barba na navalha e a melhor experiencia em barbearia da cidade.</p>
+        <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
+          <a href="/agendar" class="btn btn-gold btn-lg px-4"><i class="fa-regular fa-calendar-check me-2"></i>Agendar horario</a>
+          <a href="#servicos" class="btn btn-outline-light btn-lg px-4">Ver servicos</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SOBRE -->
+<section id="sobre" class="section-dark py-5 py-lg-6">
+  <div class="container py-4">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <p class="eyebrow gold-text">Sobre nos</p>
+        <h2 class="section-title mb-4">Tradicao em cada detalhe</h2>
+        <p class="text-secondary"><%= settings.about_text %></p>
+        <div class="row g-3 mt-3">
+          <div class="col-4 text-center">
+            <h3 class="gold-text mb-0">+10</h3><small class="text-secondary">Anos de experiencia</small>
+          </div>
+          <div class="col-4 text-center">
+            <h3 class="gold-text mb-0">+5000</h3><small class="text-secondary">Clientes atendidos</small>
+          </div>
+          <div class="col-4 text-center">
+            <h3 class="gold-text mb-0"><%= barbers.length %></h3><small class="text-secondary">Profissionais</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="about-image-wrap">
+          <div class="about-image"><i class="fa-solid fa-scissors"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICOS -->
+<section id="servicos" class="section-light py-5 py-lg-6">
+  <div class="container py-4">
+    <p class="eyebrow gold-text text-center">O que oferecemos</p>
+    <h2 class="section-title text-center mb-5">Nossos Servicos</h2>
+    <div class="row g-4">
+      <% services.forEach(function(s) { %>
+        <div class="col-md-6 col-lg-4">
+          <div class="service-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="mb-0"><%= s.name %></h5>
+              <span class="badge-gold"><%= s.category || 'Servico' %></span>
+            </div>
+            <p class="text-secondary small mb-3"><%= s.description || '' %></p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="price-tag">R$ <%= s.price.toFixed(2).replace('.', ',') %></span>
+              <small class="text-secondary"><i class="fa-regular fa-clock me-1"></i><%= s.duration_minutes %> min</small>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPE -->
+<section id="equipe" class="section-dark py-5 py-lg-6">
+  <div class="container py-4">
+    <p class="eyebrow gold-text text-center">Profissionais</p>
+    <h2 class="section-title text-center mb-5">Nossa Equipe</h2>
+    <div class="row g-4 justify-content-center">
+      <% barbers.forEach(function(b) { %>
+        <div class="col-md-4 col-lg-3">
+          <div class="barber-card text-center">
+            <div class="barber-photo mx-auto mb-3">
+              <% if (b.photo) { %><img src="<%= b.photo %>" alt="<%= b.name %>">
+              <% } else { %><i class="fa-solid fa-user"></i><% } %>
+            </div>
+            <h5 class="mb-1"><%= b.name %></h5>
+            <p class="text-secondary small"><%= b.specialty || 'Barbeiro profissional' %></p>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- GALERIA -->
+<section id="galeria" class="section-light py-5 py-lg-6">
+  <div class="container py-4">
+    <p class="eyebrow gold-text text-center">Nosso trabalho</p>
+    <h2 class="section-title text-center mb-5">Galeria</h2>
+    <div class="row g-3">
+      <% for (let i = 0; i < 8; i++) { %>
+        <div class="col-6 col-md-3">
+          <div class="gallery-item"><i class="fa-solid fa-scissors"></i></div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<!-- AVALIACOES -->
+<section id="avaliacoes" class="section-dark py-5 py-lg-6">
+  <div class="container py-4">
+    <p class="eyebrow gold-text text-center">Depoimentos</p>
+    <h2 class="section-title text-center mb-5">O que dizem nossos clientes</h2>
+    <div class="row g-4">
+      <% const reviews = [
+        { name: 'Carlos M.', text: 'Melhor barbearia da regiao! Atendimento impecavel e corte perfeito.' },
+        { name: 'Bruno A.', text: 'Ambiente top, profissionais atenciosos. Virei cliente fiel.' },
+        { name: 'Felipe R.', text: 'Agendamento online super pratico e sem espera.' }
+      ]; %>
+      <% reviews.forEach(function(r) { %>
+        <div class="col-md-4">
+          <div class="review-card h-100">
+            <div class="mb-2 gold-text">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            </div>
+            <p class="text-secondary small">"<%= r.text %>"</p>
+            <p class="mb-0 fw-semibold">- <%= r.name %></p>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- LOCALIZACAO -->
+<section class="section-light py-5 py-lg-6">
+  <div class="container py-4">
+    <p class="eyebrow gold-text text-center">Como chegar</p>
+    <h2 class="section-title text-center mb-5">Localizacao</h2>
+    <div class="ratio ratio-21x9 map-frame">
+      <% if (settings.maps_embed) { %>
+        <%- settings.maps_embed %>
+      <% } else { %>
+        <iframe src="https://www.google.com/maps?q=<%= encodeURIComponent(settings.address) %>&output=embed" style="border:0;" allowfullscreen loading="lazy"></iframe>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/site-footer') %>

@@ -1,0 +1,31 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="d-flex justify-content-end mb-3">
+  <a href="/admin/barbers/new" class="btn btn-gold btn-sm"><i class="fa-solid fa-plus me-1"></i>Novo Barbeiro</a>
+</div>
+
+<div class="row g-3">
+  <% barbers.forEach(function(b) { %>
+    <div class="col-md-4 col-lg-3">
+      <div class="panel text-center h-100">
+        <div class="barber-photo mx-auto mb-3">
+          <% if (b.photo) { %><img src="<%= b.photo %>" alt="<%= b.name %>"><% } else { %><i class="fa-solid fa-user"></i><% } %>
+        </div>
+        <h6 class="mb-1"><%= b.name %></h6>
+        <p class="text-secondary small mb-2"><%= b.specialty || '-' %></p>
+        <span class="status-badge <%= b.status === 'active' ? 'status-confirmed' : 'status-cancelled' %>"><%= b.status === 'active' ? 'Ativo' : 'Inativo' %></span>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+          <a href="/admin/barbers/<%= b.id %>/edit" class="btn-icon" title="Editar"><i class="fa-solid fa-pen"></i></a>
+          <form action="/admin/barbers/<%= b.id %>/delete" method="POST" class="confirm-form" data-confirm="Excluir este barbeiro?">
+            <button type="submit" class="btn-icon text-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+  <% if (barbers.length === 0) { %>
+    <div class="col-12"><div class="panel text-center text-secondary py-4">Nenhum barbeiro cadastrado.</div></div>
+  <% } %>
+</div>
+
+<%- include('../../partials/admin-footer') %>

@@ -1,0 +1,97 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="panel" style="max-width:720px;">
+  <form action="<%= appointment ? '/admin/appointments/' + appointment.id : '/admin/appointments' %>" method="POST">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Cliente *</label>
+        <select name="client_id" class="form-select" required>
+          <option value="">Selecione...</option>
+          <% clients.forEach(function(c) { %>
+            <option value="<%= c.id %>" <%= appointment && appointment.client_id === c.id ? 'selected' : '' %>><%= c.name %> - <%= c.phone %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Barbeiro *</label>
+        <select name="barber_id" id="barber_id" class="form-select" required>
+          <option value="">Selecione...</option>
+          <% barbers.forEach(function(b) { %>
+            <option value="<%= b.id %>" <%= appointment && appointment.barber_id === b.id ? 'selected' : '' %>><%= b.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Servico *</label>
+        <select name="service_id" id="service_id" class="form-select" required>
+          <option value="">Selecione...</option>
+          <% services.forEach(function(s) { %>
+            <option value="<%= s.id %>" <%= appointment && appointment.service_id === s.id ? 'selected' : '' %>><%= s.name %> (R$ <%= s.price.toFixed(2).replace('.', ',') %>)</option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Data *</label>
+        <input type="date" name="date" id="date_input" class="form-control" required value="<%= appointment ? appointment.date : '' %>">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Horario *</label>
+        <select name="time" id="time_select" class="form-select" required>
+          <% if (appointment) { %><option value="<%= appointment.time %>" selected><%= appointment.time %></option><% } %>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="pending" <%= appointment && appointment.status === 'pending' ? 'selected' : '' %>>Pendente</option>
+          <option value="confirmed" <%= appointment && appointment.status === 'confirmed' ? 'selected' : '' %>>Confirmado</option>
+          <option value="completed" <%= appointment && appointment.status === 'completed' ? 'selected' : '' %>>Finalizado</option>
+          <option value="cancelled" <%= appointment && appointment.status === 'cancelled' ? 'selected' : '' %>>Cancelado</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Observacoes</label>
+        <textarea name="notes" class="form-control" rows="2"><%= appointment ? (appointment.notes || '') : '' %></textarea>
+      </div>
+    </div>
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-gold">Salvar</button>
+      <a href="/admin/appointments" class="btn btn-outline-light">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  const AVAILABLE_TIMES_URL = '/admin/appointments/available-times';
+  const CURRENT_TIME = <%- appointment ? JSON.stringify(appointment.time) : 'null' %>;
+
+  async function loadTimes() {
+    const barberId = document.getElementById('barber_id').value;
+    const serviceId = document.getElementById('service_id').value;
+    const date = document.getElementById('date_input').value;
+    const select = document.getElementById('time_select');
+    if (!barberId || !serviceId || !date) return;
+
+    const res = await fetch(`${AVAILABLE_TIMES_URL}?barberId=${barberId}&serviceId=${serviceId}&date=${date}`);
+    const slots = await res.json();
+    select.innerHTML = '';
+    if (CURRENT_TIME && !slots.find(s => s.time === CURRENT_TIME)) {
+      select.innerHTML += `<option value="${CURRENT_TIME}">${CURRENT_TIME} (atual)</option>`;
+    }
+    slots.forEach(s => {
+      if (!s.available) return;
+      const opt = document.createElement('option');
+      opt.value = s.time;
+      opt.textContent = s.time;
+      if (s.time === CURRENT_TIME) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
+  ['barber_id', 'service_id', 'date_input'].forEach(id => {
+    document.getElementById(id).addEventListener('change', loadTimes);
+  });
+  if (document.getElementById('barber_id').value) loadTimes();
+</script>
+
+<%- include('../../partials/admin-footer') %>
