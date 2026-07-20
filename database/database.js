@@ -140,6 +140,14 @@ function createSchema() {
       value TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS gallery_photos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      path TEXT NOT NULL,
+      caption TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER,
@@ -168,12 +176,12 @@ function seed() {
     const insertMany = db.transaction((rows) => rows.forEach((r) => insert.run(...r)));
     insertMany([
       [0, null, null, 0], // domingo fechado
-      [1, '09:00', '19:00', 1],
-      [2, '09:00', '19:00', 1],
-      [3, '09:00', '19:00', 1],
-      [4, '09:00', '19:00', 1],
-      [5, '09:00', '19:00', 1],
-      [6, '09:00', '17:00', 1],
+      [1, '08:00', '19:00', 1],
+      [2, '08:00', '19:00', 1],
+      [3, '08:00', '19:00', 1],
+      [4, '08:00', '19:00', 1],
+      [5, '08:00', '19:00', 1],
+      [6, '08:00', '19:00', 1],
     ]);
   }
 
@@ -230,8 +238,7 @@ function seed() {
     const scheduleAll = db.transaction(() => {
       barbers.forEach((b) => {
         for (let wd = 1; wd <= 6; wd++) {
-          const end = wd === 6 ? '17:00' : '19:00';
-          schedule.run(b.id, wd, '09:00', end, 0);
+          schedule.run(b.id, wd, '08:00', '19:00', 0);
         }
       });
     });
@@ -263,20 +270,22 @@ function reconcileServicesOnce() {
   const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_price_table'").get();
   if (marker) return;
 
+  // Duration defaults to 1h across the board for now -- easy to fine-tune
+  // per service later from Admin > Servicos > Editar.
   const priceTable = [
-    { matchNames: ['corte masculino', 'corte'], name: 'Corte', price: 30, duration_minutes: 30, category: 'Corte' },
-    { matchNames: ['barba'], name: 'Barba', price: 20, duration_minutes: 20, category: 'Barba' },
-    { matchNames: ['corte + barba'], name: 'Corte + Barba', price: 50, duration_minutes: 50, category: 'Combo' },
-    { matchNames: ['corte + barba + sobrancelha'], name: 'Corte + Barba + Sobrancelha', price: 55, duration_minutes: 55, category: 'Combo' },
-    { matchNames: ['pigmentacao'], name: 'Pigmentacao', price: 25, duration_minutes: 30, category: 'Pigmentacao' },
-    { matchNames: ['sobrancelha', 'sombrancelha'], name: 'Sobrancelha', price: 7, duration_minutes: 10, category: 'Sobrancelha' },
-    { matchNames: ['hidratacao'], name: 'Hidratacao', price: 20, duration_minutes: 30, category: 'Tratamento', description: 'Hidratacao capilar' },
-    { matchNames: ['hidratacao barba'], name: 'Hidratacao Barba', price: 10, duration_minutes: 15, category: 'Tratamento', description: 'Hidratacao para a barba' },
-    { matchNames: ['limpeza de pele'], name: 'Limpeza de Pele', price: 20, duration_minutes: 30, category: 'Tratamento' },
+    { matchNames: ['corte masculino', 'corte'], name: 'Corte', price: 30, duration_minutes: 60, category: 'Corte' },
+    { matchNames: ['barba'], name: 'Barba', price: 20, duration_minutes: 60, category: 'Barba' },
+    { matchNames: ['corte + barba'], name: 'Corte + Barba', price: 50, duration_minutes: 60, category: 'Combo' },
+    { matchNames: ['corte + barba + sobrancelha'], name: 'Corte + Barba + Sobrancelha', price: 55, duration_minutes: 60, category: 'Combo' },
+    { matchNames: ['pigmentacao'], name: 'Pigmentacao', price: 25, duration_minutes: 60, category: 'Pigmentacao' },
+    { matchNames: ['sobrancelha', 'sombrancelha'], name: 'Sobrancelha', price: 7, duration_minutes: 60, category: 'Sobrancelha' },
+    { matchNames: ['hidratacao'], name: 'Hidratacao', price: 20, duration_minutes: 60, category: 'Tratamento', description: 'Hidratacao capilar' },
+    { matchNames: ['hidratacao barba'], name: 'Hidratacao Barba', price: 10, duration_minutes: 60, category: 'Tratamento', description: 'Hidratacao para a barba' },
+    { matchNames: ['limpeza de pele'], name: 'Limpeza de Pele', price: 20, duration_minutes: 60, category: 'Tratamento' },
     { matchNames: ['selagem'], name: 'Selagem', price: 60, duration_minutes: 60, category: 'Tratamento' },
-    { matchNames: ['luzes'], name: 'Luzes', price: 100, duration_minutes: 90, category: 'Coloracao' },
-    { matchNames: ['platinado'], name: 'Platinado', price: 130, duration_minutes: 120, category: 'Coloracao' },
-    { matchNames: ['pezinho'], name: 'Pezinho', price: 10, duration_minutes: 10, category: 'Corte' },
+    { matchNames: ['luzes'], name: 'Luzes', price: 100, duration_minutes: 60, category: 'Coloracao' },
+    { matchNames: ['platinado'], name: 'Platinado', price: 130, duration_minutes: 60, category: 'Coloracao' },
+    { matchNames: ['pezinho'], name: 'Pezinho', price: 10, duration_minutes: 60, category: 'Corte' },
   ];
 
   const existing = db.prepare('SELECT id, name FROM services').all();

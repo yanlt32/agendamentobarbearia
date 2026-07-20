@@ -95,6 +95,14 @@ function remove(req, res) {
   res.redirect('/admin/appointments');
 }
 
+// Marks an appointment paid/completed: records the payment and counts the
+// visit for the client. Shared by the single-row action and the bulk action.
+function completeAppointment(appointment, method) {
+  Appointment.updateStatus(appointment.id, 'completed');
+  Payment.create(appointment.id, appointment.price, method || 'dinheiro');
+  Client.registerVisit(appointment.client_id, appointment.date);
+}
+
 function setStatus(req, res) {
   const { status } = req.body;
   const appointment = Appointment.find(req.params.id);
@@ -103,19 +111,41 @@ function setStatus(req, res) {
     return res.redirect('/admin/appointments');
   }
 
-  Appointment.updateStatus(req.params.id, status);
-
   if (status === 'completed') {
-    Payment.create(appointment.id, appointment.price, req.body.method || 'dinheiro');
-    Client.registerVisit(appointment.client_id, appointment.date);
-  }
-  if (status === 'cancelled') {
-    notifications.notifyCancellation(appointment).catch(() => {});
+    completeAppointment(appointment, req.body.method);
+  } else {
+    Appointment.updateStatus(req.params.id, status);
+    if (status === 'cancelled') {
+      notifications.notifyCancellation(appointment).catch(() => {});
+    }
   }
 
   Log.record(req.session.user.id, 'appointment_status', `Agendamento #${appointment.id} -> ${status}.`);
   realtime.broadcast('status', { id: appointment.id, status });
   req.flash('success', 'Status atualizado.');
+  res.redirect(req.get('referer') || '/admin/appointments');
+}
+
+// Finishes several appointments in one click -- useful since there's no
+// receptionist to close each ticket out individually at the end of the day.
+function bulkComplete(req, res) {
+  const ids = [].concat(req.body.ids || []).map(Number).filter((id) => Number.isInteger(id) && id > 0);
+
+  let count = 0;
+  ids.forEach((id) => {
+    const appointment = Appointment.find(id);
+    if (!appointment || appointment.status === 'completed' || appointment.status === 'cancelled') return;
+    completeAppointment(appointment, req.body.method);
+    count += 1;
+  });
+
+  if (count > 0) {
+    Log.record(req.session.user.id, 'appointment_bulk_complete', `${count} agendamento(s) finalizado(s) em lote.`);
+    realtime.broadcast('status', { bulk: true, count });
+    req.flash('success', `${count} agendamento(s) finalizado(s).`);
+  } else {
+    req.flash('error', 'Nenhum agendamento valido foi selecionado.');
+  }
   res.redirect(req.get('referer') || '/admin/appointments');
 }
 
@@ -128,4 +158,4 @@ function availableTimesJson(req, res) {
   res.json(slots);
 }
 
-module.exports = { list, newForm, create, editForm, update, remove, setStatus, availableTimesJson };
+module.exports = { list, newForm, create, editForm, update, remove, setStatus, bulkComplete, availableTimesJson };

@@ -5,7 +5,7 @@ const multer = require('multer');
 const UPLOAD_ROOT = path.join(__dirname, '..', 'public', 'uploads');
 const TMP_ROOT = path.join(__dirname, '..', 'database', 'tmp');
 
-['barbers', 'settings'].forEach((dir) => {
+['barbers', 'settings', 'gallery'].forEach((dir) => {
   const full = path.join(UPLOAD_ROOT, dir);
   if (!fs.existsSync(full)) fs.mkdirSync(full, { recursive: true });
 });
@@ -28,6 +28,7 @@ const imageFilter = (req, file, cb) => {
 
 const uploadBarberPhoto = multer({ storage: makeStorage('barbers'), fileFilter: imageFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 const uploadLogo = multer({ storage: makeStorage('settings'), fileFilter: imageFilter, limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadGalleryPhoto = multer({ storage: makeStorage('gallery'), fileFilter: imageFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 const uploadDbFile = multer({ dest: TMP_ROOT, limits: { fileSize: 200 * 1024 * 1024 } });
 
-module.exports = { uploadBarberPhoto, uploadLogo, uploadDbFile };
+module.exports = { uploadBarberPhoto, uploadLogo, uploadGalleryPhoto, uploadDbFile };

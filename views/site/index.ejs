@@ -12,7 +12,9 @@
         <% if (settings.logo) { %>
           <img src="<%= settings.logo %>" alt="<%= settings.shop_name %>" class="hero-logo-img mb-3">
         <% } else { %>
-          <div class="mb-3 hero-brand-wrap"><%- include('../partials/brand-mark', { size: 'lg' }) %></div>
+          <div class="mb-3 d-flex justify-content-center justify-content-lg-start">
+            <%- include('../partials/brand-mark', { size: 'lg' }) %>
+          </div>
         <% } %>
         <p class="hero-subtitle mb-4">Cortes de precisao, barba na navalha e a melhor experiencia em barbearia da cidade.</p>
         <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
@@ -106,10 +108,18 @@
     <p class="eyebrow gold-text text-center">Nosso trabalho</p>
     <h2 class="section-title text-center mb-5">Galeria</h2>
     <div class="row g-3">
-      <% for (let i = 0; i < 8; i++) { %>
-        <div class="col-6 col-md-3">
-          <div class="gallery-item"><i class="fa-solid fa-scissors"></i></div>
-        </div>
+      <% if (galleryPhotos.length > 0) { %>
+        <% galleryPhotos.forEach(function(p) { %>
+          <div class="col-6 col-md-3">
+            <div class="gallery-item gallery-item-photo"><img src="<%= p.path %>" alt="<%= settings.shop_name %>" loading="lazy"></div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <% for (let i = 0; i < 4; i++) { %>
+          <div class="col-6 col-md-3">
+            <div class="gallery-item"><i class="fa-solid fa-scissors"></i></div>
+          </div>
+        <% } %>
       <% } %>
     </div>
   </div>

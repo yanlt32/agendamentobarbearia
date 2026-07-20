@@ -31,7 +31,7 @@ function buildScheduleFromBody(body) {
   return WEEKDAYS.map((wd) => ({
     weekday: wd.value,
     is_off: body[`is_off_${wd.value}`] ? 1 : 0,
-    start_time: body[`start_${wd.value}`] || '09:00',
+    start_time: body[`start_${wd.value}`] || '08:00',
     end_time: body[`end_${wd.value}`] || '19:00',
   }));
 }
@@ -60,7 +60,7 @@ function editForm(req, res) {
   const selectedServices = Barber.getServices(barber.id).map((s) => s.id);
   const scheduleRows = Barber.getSchedule(barber.id);
   const schedule = WEEKDAYS.map((wd) => scheduleRows.find((s) => s.weekday === wd.value) || {
-    weekday: wd.value, start_time: '09:00', end_time: '19:00', is_off: wd.value === 0 ? 1 : 0,
+    weekday: wd.value, start_time: '08:00', end_time: '19:00', is_off: wd.value === 0 ? 1 : 0,
   });
 
   res.render('admin/barbers/form', {

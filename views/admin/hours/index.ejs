@@ -13,7 +13,7 @@
                 <tr>
                   <td><%= weekdays[h.weekday] %></td>
                   <td><input type="checkbox" name="is_open_<%= h.weekday %>" <%= h.is_open ? 'checked' : '' %>></td>
-                  <td><input type="time" name="open_<%= h.weekday %>" class="form-control form-control-sm" value="<%= h.open_time || '09:00' %>"></td>
+                  <td><input type="time" name="open_<%= h.weekday %>" class="form-control form-control-sm" value="<%= h.open_time || '08:00' %>"></td>
                   <td><input type="time" name="close_<%= h.weekday %>" class="form-control form-control-sm" value="<%= h.close_time || '19:00' %>"></td>
                 </tr>
               <% }) %>

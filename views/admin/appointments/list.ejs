@@ -45,16 +45,27 @@
 </div>
 
 <div class="panel">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div class="form-check mb-0">
+      <input class="form-check-input" type="checkbox" id="selectAll">
+      <label class="form-check-label small" for="selectAll">Selecionar todos</label>
+    </div>
+    <form id="bulkCompleteForm" action="/admin/appointments/bulk-complete" method="POST" class="d-none">
+      <button type="submit" class="btn btn-gold btn-sm"><i class="fa-solid fa-flag-checkered me-1"></i>Finalizar selecionados (<span id="bulkCount">0</span>)</button>
+    </form>
+  </div>
+
   <div class="table-responsive d-none d-md-block">
     <table class="table table-admin align-middle">
       <thead>
         <tr>
-          <th>Data</th><th>Hora</th><th>Cliente</th><th>Barbeiro</th><th>Servico</th><th>Valor</th><th>Status</th><th></th>
+          <th style="width:36px"></th><th>Data</th><th>Hora</th><th>Cliente</th><th>Barbeiro</th><th>Servico</th><th>Valor</th><th>Status</th><th></th>
         </tr>
       </thead>
       <tbody>
         <% rows.forEach(function(a) { %>
           <tr>
+            <td><input type="checkbox" class="form-check-input row-select" value="<%= a.id %>" <%= (a.status === 'completed' || a.status === 'cancelled') ? 'disabled' : '' %>></td>
             <td><%= a.date %></td>
             <td><%= a.time %></td>
             <td><%= a.client_name %><br><small class="text-secondary"><%= a.client_phone %></small></td>
@@ -91,7 +102,7 @@
           </tr>
         <% }) %>
         <% if (rows.length === 0) { %>
-          <tr><td colspan="8" class="text-center text-secondary py-4">Nenhum agendamento encontrado.</td></tr>
+          <tr><td colspan="9" class="text-center text-secondary py-4">Nenhum agendamento encontrado.</td></tr>
         <% } %>
       </tbody>
     </table>
@@ -105,9 +116,12 @@
     <% rows.forEach(function(a) { %>
       <div class="appt-card">
         <div class="appt-card-top">
-          <div>
-            <span class="appt-card-date"><i class="fa-regular fa-calendar me-1"></i><%= a.date %></span>
-            <span class="appt-card-time"><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
+          <div class="d-flex align-items-center gap-2">
+            <input type="checkbox" class="form-check-input row-select mt-0" value="<%= a.id %>" <%= (a.status === 'completed' || a.status === 'cancelled') ? 'disabled' : '' %>>
+            <div>
+              <span class="appt-card-date"><i class="fa-regular fa-calendar me-1"></i><%= a.date %></span>
+              <span class="appt-card-time"><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
+            </div>
           </div>
           <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado'})[a.status] %></span>
         </div>
@@ -165,3 +179,4 @@
 </div>
 
 <%- include('../../partials/admin-footer') %>
+<script src="/js/appointments.js"></script>

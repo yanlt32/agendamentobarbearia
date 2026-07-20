@@ -1,0 +1,35 @@
+<%- include('../../partials/admin-head') %>
+
+<div class="panel mb-4">
+  <h6 class="panel-title">Adicionar fotos</h6>
+  <p class="text-secondary small">Essas fotos aparecem na secao "Galeria" do site. Voce pode selecionar varias de uma vez.</p>
+  <form action="/admin/gallery" method="POST" enctype="multipart/form-data" class="row g-2 align-items-end">
+    <div class="col-md-8">
+      <input type="file" name="photos" class="form-control" accept="image/*" multiple required>
+    </div>
+    <div class="col-md-4">
+      <button type="submit" class="btn btn-gold w-100"><i class="fa-solid fa-upload me-1"></i>Enviar fotos</button>
+    </div>
+  </form>
+</div>
+
+<div class="panel">
+  <h6 class="panel-title">Fotos da galeria</h6>
+  <div class="row g-3">
+    <% photos.forEach(function(p) { %>
+      <div class="col-6 col-md-3">
+        <div class="gallery-admin-item">
+          <img src="<%= p.path %>" alt="Foto da barbearia">
+          <form action="/admin/gallery/<%= p.id %>/delete" method="POST" class="confirm-form" data-confirm="Remover esta foto da galeria?">
+            <button type="submit" class="gallery-admin-remove" title="Remover"><i class="fa-solid fa-trash"></i></button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+    <% if (photos.length === 0) { %>
+      <div class="col-12"><p class="text-secondary text-center py-4 mb-0">Nenhuma foto adicionada ainda.</p></div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

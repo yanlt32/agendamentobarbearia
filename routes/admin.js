@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { requireAuth } = require('../middleware/auth');
-const { uploadBarberPhoto, uploadLogo, uploadDbFile } = require('../config/upload');
+const { uploadBarberPhoto, uploadLogo, uploadGalleryPhoto, uploadDbFile } = require('../config/upload');
 
 const dashboardController = require('../controllers/admin/dashboardController');
 const appointmentController = require('../controllers/admin/appointmentController');
@@ -13,6 +13,7 @@ const hoursController = require('../controllers/admin/hoursController');
 const financialController = require('../controllers/admin/financialController');
 const settingsController = require('../controllers/admin/settingsController');
 const backupController = require('../controllers/admin/backupController');
+const galleryController = require('../controllers/admin/galleryController');
 const Log = require('../models/Log');
 const realtime = require('../utils/realtime');
 
@@ -30,6 +31,8 @@ router.get('/appointments', appointmentController.list);
 router.get('/appointments/new', appointmentController.newForm);
 router.post('/appointments', appointmentController.create);
 router.get('/appointments/available-times', appointmentController.availableTimesJson);
+// Must be registered before /appointments/:id or "bulk-complete" would be read as an :id.
+router.post('/appointments/bulk-complete', appointmentController.bulkComplete);
 router.get('/appointments/:id/edit', appointmentController.editForm);
 router.post('/appointments/:id', appointmentController.update);
 router.post('/appointments/:id/status', appointmentController.setStatus);
@@ -74,6 +77,11 @@ router.get('/financial/export.csv', financialController.exportCsv);
 // Settings
 router.get('/settings', settingsController.index);
 router.post('/settings', uploadLogo.single('logo'), settingsController.update);
+
+// Gallery (barbershop photos shown on the public site)
+router.get('/gallery', galleryController.index);
+router.post('/gallery', uploadGalleryPhoto.array('photos', 10), galleryController.upload);
+router.post('/gallery/:id/delete', galleryController.remove);
 
 // Backup
 router.get('/backup', backupController.index);

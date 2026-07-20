@@ -47,7 +47,7 @@
             <tr>
               <td><%= wd.label %></td>
               <td><input type="checkbox" name="is_off_<%= wd.value %>" <%= row.is_off ? 'checked' : '' %>></td>
-              <td><input type="time" name="start_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.start_time || '09:00' %>"></td>
+              <td><input type="time" name="start_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.start_time || '08:00' %>"></td>
               <td><input type="time" name="end_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.end_time || '19:00' %>"></td>
             </tr>
           <% }) %>
