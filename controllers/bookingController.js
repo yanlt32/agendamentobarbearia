@@ -7,12 +7,15 @@ const Holiday = require('../models/Holiday');
 const Setting = require('../models/Setting');
 const { getAvailableSlots } = require('../utils/availability');
 const notifications = require('../utils/notifications');
+const realtime = require('../utils/realtime');
 
 function showBooking(req, res) {
+  const barbers = Barber.all({ onlyActive: true });
   res.render('site/booking', {
     title: 'Agendar Horario',
     services: Service.all({ onlyActive: true }),
-    barbers: Barber.all({ onlyActive: true }),
+    barbers,
+    singleBarber: barbers.length === 1 ? barbers[0] : null,
     minDate: dayjs().format('YYYY-MM-DD'),
     maxDate: dayjs().add(60, 'day').format('YYYY-MM-DD'),
   });
@@ -88,6 +91,7 @@ async function createBooking(req, res) {
 
   const appointment = Appointment.find(appointmentId);
   notifications.notifyNewAppointment(appointment).catch(() => {});
+  realtime.broadcast('created', { id: appointmentId });
 
   res.redirect(`/agendar/sucesso?id=${appointmentId}`);
 }

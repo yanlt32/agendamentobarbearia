@@ -5,7 +5,7 @@
 </div>
 
 <div class="panel">
-  <div class="table-responsive">
+  <div class="table-responsive d-none d-md-block">
     <table class="table table-admin align-middle">
       <thead><tr><th>Nome</th><th>Categoria</th><th>Preco</th><th>Duracao</th><th>Status</th><th></th></tr></thead>
       <tbody>
@@ -13,7 +13,17 @@
           <tr>
             <td><%= s.name %><br><small class="text-secondary"><%= s.description || '' %></small></td>
             <td><%= s.category || '-' %></td>
-            <td>R$ <%= s.price.toFixed(2).replace('.', ',') %></td>
+            <td>
+              <div class="price-cell">
+                <span class="price-display">R$ <%= s.price.toFixed(2).replace('.', ',') %></span>
+                <button type="button" class="btn-icon price-edit-btn" title="Editar preco"><i class="fa-solid fa-pen"></i></button>
+                <form class="price-edit-form d-none" data-id="<%= s.id %>">
+                  <input type="number" step="0.01" min="0" class="form-control form-control-sm price-input" style="width:100px" value="<%= s.price %>">
+                  <button type="submit" class="btn-icon text-success" title="Salvar"><i class="fa-solid fa-check"></i></button>
+                  <button type="button" class="btn-icon price-cancel-btn" title="Cancelar"><i class="fa-solid fa-xmark"></i></button>
+                </form>
+              </div>
+            </td>
             <td><%= s.duration_minutes %> min</td>
             <td><span class="status-badge <%= s.active ? 'status-confirmed' : 'status-cancelled' %>"><%= s.active ? 'Ativo' : 'Inativo' %></span></td>
             <td class="text-end">
@@ -30,6 +40,44 @@
       </tbody>
     </table>
   </div>
+
+  <!-- MOBILE: card list -->
+  <div class="d-md-none">
+    <% if (services.length === 0) { %>
+      <p class="text-center text-secondary py-4 mb-0">Nenhum servico cadastrado.</p>
+    <% } %>
+    <% services.forEach(function(s) { %>
+      <div class="appt-card">
+        <div class="appt-card-top">
+          <strong><%= s.name %></strong>
+          <span class="status-badge <%= s.active ? 'status-confirmed' : 'status-cancelled' %>"><%= s.active ? 'Ativo' : 'Inativo' %></span>
+        </div>
+        <% if (s.description) { %><p class="text-secondary small mb-2"><%= s.description %></p><% } %>
+        <div class="appt-card-meta">
+          <span><i class="fa-solid fa-tag me-1"></i><%= s.category || 'Sem categoria' %></span>
+          <span><i class="fa-regular fa-clock me-1"></i><%= s.duration_minutes %> min</span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mt-2">
+          <div class="price-cell">
+            <span class="price-display fs-5 gold-text fw-semibold">R$ <%= s.price.toFixed(2).replace('.', ',') %></span>
+            <button type="button" class="btn-icon price-edit-btn" title="Editar preco"><i class="fa-solid fa-pen"></i></button>
+            <form class="price-edit-form d-none" data-id="<%= s.id %>">
+              <input type="number" step="0.01" min="0" class="form-control form-control-sm price-input" style="width:100px" value="<%= s.price %>">
+              <button type="submit" class="btn-icon text-success" title="Salvar"><i class="fa-solid fa-check"></i></button>
+              <button type="button" class="btn-icon price-cancel-btn" title="Cancelar"><i class="fa-solid fa-xmark"></i></button>
+            </form>
+          </div>
+          <div class="appt-card-actions">
+            <a href="/admin/services/<%= s.id %>/edit" class="btn-icon" title="Editar"><i class="fa-solid fa-pen"></i></a>
+            <form action="/admin/services/<%= s.id %>/delete" method="POST" class="confirm-form" data-confirm="Excluir este servico?">
+              <button type="submit" class="btn-icon text-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
 </div>
 
 <%- include('../../partials/admin-footer') %>
+<script src="/js/services.js"></script>

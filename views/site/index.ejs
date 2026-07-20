@@ -9,7 +9,11 @@
     <div class="row align-items-center">
       <div class="col-lg-7">
         <p class="eyebrow gold-text mb-2"><i class="fa-solid fa-star me-1"></i> Estilo &amp; Tradicao</p>
-        <h1 class="hero-title mb-3"><%= settings.shop_name %></h1>
+        <% if (settings.logo) { %>
+          <img src="<%= settings.logo %>" alt="<%= settings.shop_name %>" class="hero-logo-img mb-3">
+        <% } else { %>
+          <div class="mb-3 hero-brand-wrap"><%- include('../partials/brand-mark', { size: 'lg' }) %></div>
+        <% } %>
         <p class="hero-subtitle mb-4">Cortes de precisao, barba na navalha e a melhor experiencia em barbearia da cidade.</p>
         <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
           <a href="/agendar" class="btn btn-gold btn-lg px-4"><i class="fa-regular fa-calendar-check me-2"></i>Agendar horario</a>

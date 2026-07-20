@@ -45,7 +45,7 @@
 </div>
 
 <div class="panel">
-  <div class="table-responsive">
+  <div class="table-responsive d-none d-md-block">
     <table class="table table-admin align-middle">
       <thead>
         <tr>
@@ -101,6 +101,66 @@
         <% } %>
       </tbody>
     </table>
+  </div>
+
+  <!-- MOBILE: card list, built for a barber checking the schedule on a phone -->
+  <div class="appt-cards d-md-none">
+    <% if (rows.length === 0) { %>
+      <p class="text-center text-secondary py-4 mb-0">Nenhum agendamento encontrado.</p>
+    <% } %>
+    <% rows.forEach(function(a) { %>
+      <div class="appt-card">
+        <div class="appt-card-top">
+          <div>
+            <span class="appt-card-date"><i class="fa-regular fa-calendar me-1"></i><%= a.date %></span>
+            <span class="appt-card-time"><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
+          </div>
+          <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado'})[a.status] %></span>
+        </div>
+        <div class="appt-card-client">
+          <strong><%= a.client_name %></strong>
+          <div class="appt-card-contact">
+            <a href="tel:<%= a.client_phone.replace(/\D/g,'') %>" class="link-gold"><i class="fa-solid fa-phone me-1"></i><%= a.client_phone %></a>
+            <a href="https://wa.me/55<%= a.client_phone.replace(/\D/g,'') %>" target="_blank" class="link-gold ms-3"><i class="fa-brands fa-whatsapp me-1"></i>WhatsApp</a>
+          </div>
+        </div>
+        <div class="appt-card-meta">
+          <span><i class="fa-solid fa-scissors me-1"></i><%= a.service_name %></span>
+          <span><i class="fa-solid fa-user-tie me-1"></i><%= a.barber_name %></span>
+          <span class="gold-text fw-semibold">R$ <%= a.price.toFixed(2).replace('.', ',') %></span>
+        </div>
+        <div class="appt-card-actions">
+          <form action="/admin/appointments/<%= a.id %>/status" method="POST" class="flex-fill">
+            <input type="hidden" name="status" value="completed">
+            <button class="btn btn-gold btn-sm w-100" type="submit"><i class="fa-solid fa-flag-checkered me-1"></i>Finalizar</button>
+          </form>
+          <div class="dropdown">
+            <button class="btn-icon" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/admin/appointments/<%= a.id %>/edit"><i class="fa-solid fa-pen me-2"></i>Editar</a></li>
+              <li>
+                <form action="/admin/appointments/<%= a.id %>/status" method="POST" class="px-3 py-1">
+                  <input type="hidden" name="status" value="confirmed">
+                  <button class="dropdown-item p-0 border-0 bg-transparent text-start" type="submit"><i class="fa-solid fa-check me-2"></i>Confirmar presenca</button>
+                </form>
+              </li>
+              <li>
+                <form action="/admin/appointments/<%= a.id %>/status" method="POST" class="px-3 py-1 confirm-form" data-confirm="Cancelar este agendamento?">
+                  <input type="hidden" name="status" value="cancelled">
+                  <button class="dropdown-item p-0 border-0 bg-transparent text-start text-warning" type="submit"><i class="fa-solid fa-ban me-2"></i>Cancelar</button>
+                </form>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form action="/admin/appointments/<%= a.id %>/delete" method="POST" class="px-3 py-1 confirm-form" data-confirm="Excluir este agendamento permanentemente?">
+                  <button class="dropdown-item p-0 border-0 bg-transparent text-start text-danger" type="submit"><i class="fa-solid fa-trash me-2"></i>Excluir</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    <% }) %>
   </div>
 
   <% if (totalPages > 1) { %>

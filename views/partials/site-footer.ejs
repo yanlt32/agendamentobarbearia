@@ -2,7 +2,7 @@
   <div class="container py-5">
     <div class="row g-4">
       <div class="col-lg-4">
-        <h5 class="gold-text mb-3"><i class="fa-solid fa-scissors me-2"></i><%= settings.shop_name %></h5>
+        <div class="mb-3"><%- include('./brand-mark', { size: 'md' }) %></div>
         <p class="text-secondary small"><%= settings.about_text %></p>
         <div class="d-flex gap-3 mt-3">
           <a href="<%= settings.whatsapp ? 'https://wa.me/' + settings.whatsapp : '#' %>" target="_blank" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>

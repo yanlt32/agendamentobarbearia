@@ -1,6 +1,7 @@
 :root {
-  --gold: #d4af37;
-  --gold-dark: #b8942c;
+  --gold: #cda349;
+  --gold-dark: #a8822f;
+  --cream: #ece4d2;
 }
 
 [data-bs-theme="dark"] {
@@ -28,6 +29,16 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 
 .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #1a1a1a; font-weight: 600; border: none; }
 .btn-gold:hover { background: var(--gold); color: #000; }
+
+/* BRAND MARK (crown + wordmark, mirrors the shop logo) */
+.brand-mark { display: flex; align-items: center; gap: .55rem; }
+.brand-mark .brand-crown { color: var(--gold); transform: translateY(-1px); }
+.brand-text { display: flex; flex-direction: column; line-height: 1; }
+.brand-word { font-family: 'Playfair Display', serif; font-weight: 800; letter-spacing: .05em; color: var(--cream); text-transform: uppercase; }
+.brand-sub-wrap { display: none; }
+.brand-mark-sm .brand-crown { font-size: 1.05rem; }
+.brand-mark-sm .brand-word { font-size: 1.05rem; }
+.sidebar-logo-img { height: 32px; width: 32px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(205,163,73,0.4); }
 
 .admin-wrapper { display: flex; min-height: 100vh; }
 
@@ -89,11 +100,33 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 .table-admin td, .table-admin th { border-color: var(--border); vertical-align: middle; }
 .table-admin tbody tr:hover { background: rgba(212,175,55,0.05); }
 
-.status-badge { padding: .3rem .7rem; border-radius: 20px; font-size: .72rem; font-weight: 600; }
+.status-badge { padding: .3rem .7rem; border-radius: 20px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
 .status-pending { background: rgba(234,179,8,0.15); color: #eab308; }
 .status-confirmed { background: rgba(59,130,246,0.15); color: #3b82f6; }
 .status-completed { background: rgba(34,197,94,0.15); color: #22c55e; }
 .status-cancelled { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+/* APPOINTMENT CARDS (mobile) */
+.appt-card {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1rem; margin-bottom: .8rem;
+}
+.appt-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+.appt-card-date, .appt-card-time { font-size: .8rem; color: var(--text-muted); font-weight: 600; }
+.appt-card-time { margin-left: .6rem; }
+.appt-card-client strong { font-size: 1.02rem; }
+.appt-card-contact { font-size: .82rem; margin-top: .2rem; }
+.appt-card-contact a { text-decoration: none; }
+.appt-card-meta {
+  display: flex; flex-wrap: wrap; gap: .5rem 1rem; font-size: .82rem; color: var(--text-muted);
+  margin: .7rem 0; padding-top: .6rem; border-top: 1px dashed var(--border);
+}
+.appt-card-actions { display: flex; align-items: center; gap: .5rem; }
+
+/* INLINE PRICE EDIT */
+.price-cell { display: flex; align-items: center; gap: .3rem; }
+.price-edit-form { display: flex; align-items: center; gap: .3rem; }
+.price-edit-form.d-none { display: none; }
 
 .upcoming-list li {
   display:flex; justify-content:space-between; align-items:center;
@@ -116,6 +149,20 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
   .admin-sidebar { transform: translateX(-100%); }
   .admin-sidebar.show { transform: translateX(0); }
   .admin-main { margin-left: 0; }
+}
+
+/* LIVE UPDATES BANNER */
+.live-banner {
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+  z-index: 2000; background: var(--panel); border: 1px solid var(--gold);
+  border-radius: 30px; padding: .55rem .6rem .55rem 1.1rem; display: flex; align-items: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35); font-size: .85rem; color: var(--text);
+  animation: liveBannerIn .25s ease;
+  max-width: calc(100vw - 24px);
+}
+@keyframes liveBannerIn { from { opacity: 0; transform: translate(-50%,-12px); } to { opacity: 1; transform: translate(-50%,0); } }
+@media (max-width: 575px) {
+  .live-banner span { display: none; }
 }
 
 @media print {

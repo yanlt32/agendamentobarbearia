@@ -1,0 +1,17 @@
+<%
+  var _size = (typeof size !== 'undefined') ? size : 'sm';
+  var _parts = (settings.shop_name || 'Jackson Barbearia').trim().split(/\s+/);
+  var _sub = 'Barbearia';
+  var _main = _parts.join(' ');
+  if (_parts.length > 1 && /barbearia/i.test(_parts[_parts.length - 1])) {
+    _sub = _parts.pop();
+    _main = _parts.join(' ');
+  }
+%>
+<div class="brand-mark brand-mark-<%= _size %>">
+  <i class="fa-solid fa-crown brand-crown"></i>
+  <div class="brand-text">
+    <span class="brand-word"><%= _main %></span>
+    <span class="brand-sub-wrap"><span class="brand-line"></span><span class="brand-sub"><%= _sub %></span><span class="brand-line"></span></span>
+  </div>
+</div>

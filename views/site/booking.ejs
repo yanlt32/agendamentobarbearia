@@ -12,17 +12,23 @@
 
     <div class="row justify-content-center">
       <div class="col-lg-9">
-        <div class="booking-steps mb-4">
+        <div class="booking-steps mb-4" id="bookingSteps">
           <div class="step active" data-step="1"><span>1</span>Servico</div>
-          <div class="step" data-step="2"><span>2</span>Barbeiro</div>
-          <div class="step" data-step="3"><span>3</span>Data</div>
-          <div class="step" data-step="4"><span>4</span>Horario</div>
-          <div class="step" data-step="5"><span>5</span>Seus dados</div>
+          <% if (!singleBarber) { %><div class="step" data-step="2"><span>2</span>Barbeiro</div><% } %>
+          <div class="step" data-step="3"><span><%= singleBarber ? 2 : 3 %></span>Data</div>
+          <div class="step" data-step="4"><span><%= singleBarber ? 3 : 4 %></span>Horario</div>
+          <div class="step" data-step="5"><span><%= singleBarber ? 4 : 5 %></span>Seus dados</div>
         </div>
 
-        <form action="/agendar" method="POST" id="bookingForm" class="booking-card">
+        <% if (singleBarber) { %>
+          <p class="text-center text-secondary small mb-4">
+            Atendimento com <strong class="gold-text"><%= singleBarber.name %></strong>
+          </p>
+        <% } %>
+
+        <form action="/agendar" method="POST" id="bookingForm" class="booking-card" data-single-barber-id="<%= singleBarber ? singleBarber.id : '' %>" data-single-barber-name="<%= singleBarber ? singleBarber.name : '' %>">
           <input type="hidden" name="service_id" id="service_id" required>
-          <input type="hidden" name="barber_id" id="barber_id" required>
+          <input type="hidden" name="barber_id" id="barber_id" value="<%= singleBarber ? singleBarber.id : '' %>" required>
           <input type="hidden" name="time" id="time_input" required>
 
           <!-- STEP 1: SERVICO -->
@@ -44,10 +50,12 @@
           </div>
 
           <!-- STEP 2: BARBEIRO -->
+          <% if (!singleBarber) { %>
           <div class="booking-pane d-none" data-pane="2">
             <h5 class="mb-3">Escolha o barbeiro</h5>
             <div class="row g-3" id="barberList"></div>
           </div>
+          <% } %>
 
           <!-- STEP 3: DATA -->
           <div class="booking-pane d-none" data-pane="3">

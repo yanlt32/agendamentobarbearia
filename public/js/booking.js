@@ -8,7 +8,20 @@
   const btnNext = document.getElementById('btnNext');
   const btnSubmit = document.getElementById('btnSubmit');
 
-  const state = { step: 1, serviceId: null, serviceName: '', servicePrice: 0, barberId: null, barberName: '', date: '', time: '' };
+  // Pane order is derived from whichever panes actually exist in the DOM,
+  // so the single-barber shop (no "choose barber" pane) skips step 2 automatically.
+  const sequence = Array.from(panes).map((p) => Number(p.dataset.pane)).sort((a, b) => a - b);
+
+  const singleBarberId = form.dataset.singleBarberId || '';
+  const singleBarberName = form.dataset.singleBarberName || '';
+
+  const state = {
+    step: sequence[0],
+    serviceId: null, serviceName: '', servicePrice: 0,
+    barberId: singleBarberId || null,
+    barberName: singleBarberName || '',
+    date: '', time: '',
+  };
 
   function showStep(n) {
     state.step = n;
@@ -18,10 +31,11 @@
       s.classList.toggle('active', v === n);
       s.classList.toggle('done', v < n);
     });
-    btnPrev.disabled = n === 1;
-    btnNext.classList.toggle('d-none', n === 5);
-    btnSubmit.classList.toggle('d-none', n !== 5);
-    if (n === 5) buildSummary();
+    btnPrev.disabled = n === sequence[0];
+    const isLast = n === sequence[sequence.length - 1];
+    btnNext.classList.toggle('d-none', isLast);
+    btnSubmit.classList.toggle('d-none', !isLast);
+    if (isLast) buildSummary();
   }
 
   function buildSummary() {
@@ -116,13 +130,15 @@
       alert('Selecione uma opcao para continuar.');
       return;
     }
-    if (state.step === 1) await loadBarbers();
+    if (state.step === 1 && !singleBarberId) await loadBarbers();
     if (state.step === 3) await loadTimes();
-    if (state.step < 5) showStep(state.step + 1);
+    const idx = sequence.indexOf(state.step);
+    if (idx < sequence.length - 1) showStep(sequence[idx + 1]);
   });
 
   btnPrev.addEventListener('click', function () {
-    if (state.step > 1) showStep(state.step - 1);
+    const idx = sequence.indexOf(state.step);
+    if (idx > 0) showStep(sequence[idx - 1]);
   });
 
   form.addEventListener('submit', function (e) {
@@ -132,5 +148,5 @@
     }
   });
 
-  showStep(1);
+  showStep(sequence[0]);
 })();

@@ -1,9 +1,11 @@
 :root {
-  --gold: #d4af37;
-  --gold-dark: #b8942c;
+  --gold: #cda349;
+  --gold-dark: #a8822f;
+  --gold-light: #e3c780;
   --black: #0d0d0d;
   --black-2: #161616;
   --white: #f5f5f5;
+  --cream: #ece4d2;
 }
 
 body {
@@ -25,6 +27,52 @@ body {
   border: none;
 }
 .btn-gold:hover { background: var(--gold); color: #000; }
+
+/* BRAND MARK (crown + wordmark, mirrors the shop logo) */
+.brand-mark { display: flex; align-items: center; gap: .55rem; }
+.brand-mark .brand-crown {
+  color: var(--gold);
+  filter: drop-shadow(0 0 6px rgba(205,163,73,0.35));
+  transform: translateY(-1px);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1; }
+.brand-word {
+  font-family: 'Playfair Display', serif;
+  font-weight: 800;
+  letter-spacing: .05em;
+  color: var(--cream);
+  text-transform: uppercase;
+}
+.brand-sub-wrap { display: flex; align-items: center; gap: .35rem; margin-top: .2rem; }
+.brand-sub {
+  font-size: .55rem;
+  letter-spacing: .3em;
+  color: var(--gold);
+  text-transform: uppercase;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); min-width: 10px; }
+.brand-sub-wrap .brand-line:last-child { background: linear-gradient(90deg, var(--gold), transparent); }
+
+.brand-mark-sm .brand-crown { font-size: 1.05rem; }
+.brand-mark-sm .brand-word { font-size: 1.05rem; }
+.brand-mark-sm .brand-sub-wrap { display: none; }
+
+.brand-mark-md .brand-crown { font-size: 1.4rem; }
+.brand-mark-md .brand-word { font-size: 1.4rem; }
+.brand-mark-md .brand-sub { font-size: .6rem; }
+.brand-mark-md .brand-line { min-width: 16px; }
+
+.brand-mark-lg .brand-crown { font-size: 2.6rem; }
+.brand-mark-lg .brand-word { font-size: clamp(2.4rem, 5vw, 3.6rem); }
+.brand-mark-lg .brand-sub { font-size: .85rem; }
+.brand-mark-lg .brand-line { min-width: 28px; }
+.hero-brand-wrap { display: flex; }
+
+.brand-logo-img { height: 38px; width: 38px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(205,163,73,0.4); }
+.hero-logo-img { max-height: 190px; }
+.sidebar-logo-img { height: 32px; width: 32px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(205,163,73,0.4); }
 
 /* NAVBAR */
 .site-navbar {

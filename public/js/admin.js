@@ -77,4 +77,33 @@
       confirmModal.hide();
     });
   }
+
+  // Live updates (SSE): any device with an admin page open is notified the
+  // instant an appointment changes elsewhere, so the barber always sees the
+  // same schedule no matter which phone/tablet/computer they're on.
+  const liveBanner = document.getElementById('liveBanner');
+  if (liveBanner && window.EventSource) {
+    const refreshBtn = document.getElementById('liveRefreshBtn');
+    const closeBtn = document.getElementById('liveBannerClose');
+    let pendingWhileHidden = false;
+    const es = new EventSource('/admin/stream');
+
+    es.addEventListener('appointments-changed', function () {
+      if (document.hidden) {
+        pendingWhileHidden = true;
+        return;
+      }
+      liveBanner.classList.remove('d-none');
+    });
+
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && pendingWhileHidden) {
+        pendingWhileHidden = false;
+        liveBanner.classList.remove('d-none');
+      }
+    });
+
+    if (refreshBtn) refreshBtn.addEventListener('click', function () { window.location.reload(); });
+    if (closeBtn) closeBtn.addEventListener('click', function () { liveBanner.classList.add('d-none'); });
+  }
 })();

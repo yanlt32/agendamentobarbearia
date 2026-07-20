@@ -239,7 +239,100 @@ function seed() {
   }
 }
 
+function normalizeName(str) {
+  // Strip combining diacritical marks (U+0300-U+036F) left behind by NFD
+  // normalization, e.g. "Pigmentação" -> "pigmentacao", for accent-insensitive matching.
+  return String(str)
+    .normalize('NFD')
+    .split('')
+    .filter((ch) => {
+      const code = ch.codePointAt(0);
+      return code < 0x0300 || code > 0x036f;
+    })
+    .join('')
+    .toLowerCase()
+    .trim();
+}
+
+// One-time import of the shop's real price table into the services catalog.
+// Runs only once (guarded by a settings flag) and only fills in / creates
+// rows -- after that, prices are entirely in the barber's hands via the
+// "editar preco" control on /admin/services, and this migration won't
+// overwrite whatever they change later.
+function reconcileServicesOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_price_table'").get();
+  if (marker) return;
+
+  const priceTable = [
+    { matchNames: ['corte masculino', 'corte'], name: 'Corte', price: 30, duration_minutes: 30, category: 'Corte' },
+    { matchNames: ['barba'], name: 'Barba', price: 20, duration_minutes: 20, category: 'Barba' },
+    { matchNames: ['corte + barba'], name: 'Corte + Barba', price: 50, duration_minutes: 50, category: 'Combo' },
+    { matchNames: ['corte + barba + sobrancelha'], name: 'Corte + Barba + Sobrancelha', price: 55, duration_minutes: 55, category: 'Combo' },
+    { matchNames: ['pigmentacao'], name: 'Pigmentacao', price: 25, duration_minutes: 30, category: 'Pigmentacao' },
+    { matchNames: ['sobrancelha', 'sombrancelha'], name: 'Sobrancelha', price: 7, duration_minutes: 10, category: 'Sobrancelha' },
+    { matchNames: ['hidratacao'], name: 'Hidratacao', price: 20, duration_minutes: 30, category: 'Tratamento', description: 'Hidratacao capilar' },
+    { matchNames: ['hidratacao barba'], name: 'Hidratacao Barba', price: 10, duration_minutes: 15, category: 'Tratamento', description: 'Hidratacao para a barba' },
+    { matchNames: ['limpeza de pele'], name: 'Limpeza de Pele', price: 20, duration_minutes: 30, category: 'Tratamento' },
+    { matchNames: ['selagem'], name: 'Selagem', price: 60, duration_minutes: 60, category: 'Tratamento' },
+    { matchNames: ['luzes'], name: 'Luzes', price: 100, duration_minutes: 90, category: 'Coloracao' },
+    { matchNames: ['platinado'], name: 'Platinado', price: 130, duration_minutes: 120, category: 'Coloracao' },
+    { matchNames: ['pezinho'], name: 'Pezinho', price: 10, duration_minutes: 10, category: 'Corte' },
+  ];
+
+  const existing = db.prepare('SELECT id, name FROM services').all();
+  const updateStmt = db.prepare(`
+    UPDATE services SET name=@name, price=@price, duration_minutes=@duration_minutes,
+      category=@category, description=COALESCE(description, @description)
+    WHERE id=@id
+  `);
+  const insertStmt = db.prepare(`
+    INSERT INTO services (name, description, price, duration_minutes, category, active)
+    VALUES (@name, @description, @price, @duration_minutes, @category, 1)
+  `);
+
+  const tx = db.transaction(() => {
+    priceTable.forEach((item) => {
+      const match = existing.find((row) => item.matchNames.includes(normalizeName(row.name)));
+      const payload = {
+        name: item.name,
+        price: item.price,
+        duration_minutes: item.duration_minutes,
+        category: item.category,
+        description: item.description || null,
+      };
+      if (match) {
+        updateStmt.run({ ...payload, id: match.id });
+      } else {
+        insertStmt.run(payload);
+      }
+    });
+  });
+  tx();
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_price_table', 'done');
+}
+
+// One-time cleanup: this shop currently has a single barber, but the demo
+// seed used to create a second sample one. Soft-deactivate any extra
+// seeded barber (keeps history, reversible from /admin/barbers) so the
+// booking flow shows just one professional. Runs only once, guarded by a
+// settings flag, so it never fights a barber added later through the admin panel.
+function reconcileBarbersOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_single_barber'").get();
+  if (marker) return;
+
+  const active = db.prepare("SELECT id, name FROM barbers WHERE status = 'active' ORDER BY id ASC").all();
+  if (active.length > 1) {
+    const deactivate = db.prepare("UPDATE barbers SET status = 'inactive' WHERE id = ?");
+    active.slice(1).forEach((b) => deactivate.run(b.id));
+  }
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_single_barber', 'done');
+}
+
 createSchema();
 seed();
+reconcileServicesOnce();
+reconcileBarbersOnce();
 
 module.exports = { db, DB_PATH, BACKUP_DIR, backup };

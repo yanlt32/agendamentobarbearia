@@ -49,4 +49,29 @@ function remove(req, res) {
   res.redirect('/admin/services');
 }
 
-module.exports = { list, newForm, create, editForm, update, remove };
+// Quick inline price edit, used by the "editar preco" control on the services list
+// so the barber can update a value without opening the full edit form.
+function updatePrice(req, res) {
+  const price = parseFloat(req.body.price);
+  const isJson = req.is('json') || req.xhr;
+
+  if (!Service.find(req.params.id)) {
+    if (isJson) return res.status(404).json({ error: 'Servico nao encontrado.' });
+    req.flash('error', 'Servico nao encontrado.');
+    return res.redirect('/admin/services');
+  }
+  if (Number.isNaN(price) || price < 0) {
+    if (isJson) return res.status(400).json({ error: 'Preco invalido.' });
+    req.flash('error', 'Preco invalido.');
+    return res.redirect('/admin/services');
+  }
+
+  Service.updatePrice(req.params.id, price);
+  Log.record(req.session.user.id, 'service_price_update', `Preco do servico #${req.params.id} atualizado para R$ ${price.toFixed(2)}.`);
+
+  if (isJson) return res.json({ ok: true, price });
+  req.flash('success', 'Preco atualizado.');
+  res.redirect('/admin/services');
+}
+
+module.exports = { list, newForm, create, editForm, update, remove, updatePrice };

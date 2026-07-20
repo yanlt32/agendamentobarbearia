@@ -14,11 +14,16 @@ const financialController = require('../controllers/admin/financialController');
 const settingsController = require('../controllers/admin/settingsController');
 const backupController = require('../controllers/admin/backupController');
 const Log = require('../models/Log');
+const realtime = require('../utils/realtime');
 
 router.use(requireAuth);
 
 router.get('/', (req, res) => res.redirect('/admin/dashboard'));
 router.get('/dashboard', dashboardController.index);
+
+// Live updates: any device with an admin page open gets notified the
+// instant an appointment is created/edited/cancelled anywhere else.
+router.get('/stream', realtime.stream);
 
 // Appointments
 router.get('/appointments', appointmentController.list);
@@ -53,6 +58,7 @@ router.get('/services/new', serviceController.newForm);
 router.post('/services', serviceController.create);
 router.get('/services/:id/edit', serviceController.editForm);
 router.post('/services/:id', serviceController.update);
+router.post('/services/:id/price', serviceController.updatePrice);
 router.post('/services/:id/delete', serviceController.remove);
 
 // Working hours & holidays

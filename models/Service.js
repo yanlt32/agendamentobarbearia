@@ -29,6 +29,10 @@ function remove(id) {
   db.prepare('DELETE FROM services WHERE id = ?').run(id);
 }
 
+function updatePrice(id, price) {
+  db.prepare('UPDATE services SET price = ? WHERE id = ?').run(price, id);
+}
+
 function topSold(start, end, limit = 5) {
   return db.prepare(`
     SELECT s.name, COUNT(a.id) AS total, SUM(a.price) AS revenue
@@ -38,4 +42,4 @@ function topSold(start, end, limit = 5) {
   `).all(start, end, limit);
 }
 
-module.exports = { all, find, create, update, remove, topSold };
+module.exports = { all, find, create, update, remove, updatePrice, topSold };

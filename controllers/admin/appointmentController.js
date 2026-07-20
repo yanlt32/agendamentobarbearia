@@ -6,6 +6,7 @@ const Payment = require('../../models/Payment');
 const Log = require('../../models/Log');
 const notifications = require('../../utils/notifications');
 const { getAvailableSlots } = require('../../utils/availability');
+const realtime = require('../../utils/realtime');
 
 function list(req, res) {
   const { range, barberId, status, search, page, dateFrom, dateTo } = req.query;
@@ -46,6 +47,7 @@ function create(req, res) {
   });
 
   Log.record(req.session.user.id, 'appointment_create', `Agendamento #${id} criado.`);
+  realtime.broadcast('created', { id });
   req.flash('success', 'Agendamento criado com sucesso.');
   res.redirect('/admin/appointments');
 }
@@ -80,6 +82,7 @@ function update(req, res) {
   });
 
   Log.record(req.session.user.id, 'appointment_update', `Agendamento #${req.params.id} atualizado.`);
+  realtime.broadcast('updated', { id: req.params.id });
   req.flash('success', 'Agendamento atualizado com sucesso.');
   res.redirect('/admin/appointments');
 }
@@ -87,6 +90,7 @@ function update(req, res) {
 function remove(req, res) {
   Appointment.remove(req.params.id);
   Log.record(req.session.user.id, 'appointment_delete', `Agendamento #${req.params.id} excluido.`);
+  realtime.broadcast('deleted', { id: req.params.id });
   req.flash('success', 'Agendamento excluido.');
   res.redirect('/admin/appointments');
 }
@@ -110,6 +114,7 @@ function setStatus(req, res) {
   }
 
   Log.record(req.session.user.id, 'appointment_status', `Agendamento #${appointment.id} -> ${status}.`);
+  realtime.broadcast('status', { id: appointment.id, status });
   req.flash('success', 'Status atualizado.');
   res.redirect(req.get('referer') || '/admin/appointments');
 }
