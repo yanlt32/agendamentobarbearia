@@ -24,6 +24,8 @@
   document.querySelectorAll('input[name="phone"], .phone-mask').forEach(function (input) {
     input.addEventListener('input', function () {
       input.value = maskPhone(input.value);
+      const digits = input.value.replace(/\D/g, '');
+      input.setCustomValidity(digits.length >= 10 ? '' : 'Informe um WhatsApp valido, com DDD.');
     });
   });
 

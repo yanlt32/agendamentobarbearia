@@ -55,6 +55,12 @@ async function createBooking(req, res) {
     return res.redirect('/agendar');
   }
 
+  const phoneDigits = String(phone).replace(/\D/g, '');
+  if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+    req.flash('error', 'Informe um numero de WhatsApp valido, com DDD.');
+    return res.redirect('/agendar');
+  }
+
   const service = Service.find(Number(service_id));
   if (!service) {
     req.flash('error', 'Servico invalido.');
@@ -78,13 +84,15 @@ async function createBooking(req, res) {
     client = Client.find(clientId);
   }
 
+  // Shop has no secretary/receptionist to manually confirm every booking, so
+  // appointments made through the public site are already confirmed.
   const appointmentId = Appointment.create({
     client_id: client.id,
     barber_id: Number(barber_id),
     service_id: Number(service_id),
     date,
     time,
-    status: 'pending',
+    status: 'confirmed',
     notes: notes || null,
     price: service.price,
   });
@@ -130,6 +138,13 @@ function downloadIcs(req, res) {
     `SUMMARY:${icsEscape(appointment.service_name)} - ${icsEscape(shopName)}`,
     `DESCRIPTION:Agendamento com ${icsEscape(appointment.barber_name)} na ${icsEscape(shopName)}.`,
     `LOCATION:${icsEscape(address)}`,
+    // Reminder pops up on the client's phone/calendar 1h before the
+    // appointment -- no WhatsApp/SMS provider needed for this to work.
+    'BEGIN:VALARM',
+    'ACTION:DISPLAY',
+    `DESCRIPTION:Lembrete: seu horario na ${icsEscape(shopName)} e daqui a 1 hora.`,
+    'TRIGGER:-PT1H',
+    'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');
