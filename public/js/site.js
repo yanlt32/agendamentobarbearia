@@ -30,4 +30,15 @@
   });
 
   window.maskPhone = maskPhone;
+
+  // Hero background slideshow: crossfades between uploaded gallery photos.
+  const slides = document.querySelectorAll('.hero-slide');
+  if (slides.length > 1) {
+    let current = 0;
+    setInterval(function () {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }, 5000);
+  }
 })();

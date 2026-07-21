@@ -92,10 +92,23 @@ body {
   position: relative;
   overflow: hidden;
 }
+/* No shop photos uploaded yet: designed background graphic instead of a flat gradient. */
+.hero.hero-has-art {
+  background-image: url('/img/hero-bg.svg');
+}
+/* One or more gallery photos: crossfading slideshow layers behind the overlay. */
+.hero-slide {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  opacity: 0; transition: opacity 1.4s ease;
+}
+.hero-slide.active { opacity: 1; }
+
 .hero-overlay {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; z-index: 1;
   background: repeating-linear-gradient(135deg, rgba(212,175,55,0.03) 0 2px, transparent 2px 40px);
 }
+.hero .container { position: relative; z-index: 2; }
 /* When a real shop photo is set as backdrop, darken it so text stays readable. */
 .hero.hero-has-photo .hero-overlay {
   background:

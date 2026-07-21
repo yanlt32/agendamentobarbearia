@@ -3,8 +3,12 @@
 <%- include('../partials/flash') %>
 
 <!-- HERO -->
-<header class="hero d-flex align-items-center <%= heroPhoto ? 'hero-has-photo' : '' %>"
-  <% if (heroPhoto) { %>style="background-image: url('<%= heroPhoto.path %>')"<% } %>>
+<header class="hero d-flex align-items-center <%= heroPhotos.length > 0 ? 'hero-has-photo' : 'hero-has-art' %>">
+  <% if (heroPhotos.length > 0) { %>
+    <% heroPhotos.forEach(function(p, i) { %>
+      <div class="hero-slide <%= i === 0 ? 'active' : '' %>" style="background-image: url('<%= p.path %>')"></div>
+    <% }) %>
+  <% } %>
   <div class="hero-overlay"></div>
   <div class="container position-relative text-center text-lg-start">
     <div class="row align-items-center">
