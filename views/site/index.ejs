@@ -48,7 +48,11 @@
       </div>
       <div class="col-lg-6">
         <div class="about-image-wrap">
-          <div class="about-image"><i class="fa-solid fa-scissors"></i></div>
+          <% if (barbers.length === 1 && barbers[0].photo) { %>
+            <div class="about-image about-image-photo"><img src="<%= barbers[0].photo %>" alt="<%= barbers[0].name %>"></div>
+          <% } else { %>
+            <div class="about-image"><i class="fa-solid fa-scissors"></i></div>
+          <% } %>
         </div>
       </div>
     </div>
@@ -110,8 +114,15 @@
     <div class="row g-3">
       <% if (galleryPhotos.length > 0) { %>
         <% galleryPhotos.forEach(function(p) { %>
+          <% const isVideo = /\.(mp4|webm|mov|m4v)$/i.test(p.path); %>
           <div class="col-6 col-md-3">
-            <div class="gallery-item gallery-item-photo"><img src="<%= p.path %>" alt="<%= settings.shop_name %>" loading="lazy"></div>
+            <div class="gallery-item gallery-item-photo">
+              <% if (isVideo) { %>
+                <video src="<%= p.path %>" controls playsinline preload="metadata"></video>
+              <% } else { %>
+                <img src="<%= p.path %>" alt="<%= settings.shop_name %>" loading="lazy">
+              <% } %>
+            </div>
           </div>
         <% }) %>
       <% } else { %>

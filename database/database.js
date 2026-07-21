@@ -219,11 +219,11 @@ function seed() {
 
   const barberCount = db.prepare('SELECT COUNT(*) AS c FROM barbers').get().c;
   if (barberCount === 0) {
-    const insert = db.prepare('INSERT INTO barbers (name, specialty, status) VALUES (?, ?, ?)');
+    const insert = db.prepare('INSERT INTO barbers (name, specialty, photo, status) VALUES (?, ?, ?, ?)');
     const insertMany = db.transaction((rows) => rows.forEach((r) => insert.run(...r)));
     insertMany([
-      ['Jackson', 'Cortes classicos e navalha', 'active'],
-      ['Rafael Souza', 'Degrade e barba desenhada', 'active'],
+      ['Jackson', 'Cortes classicos e navalha', '/uploads/barbers/jackson.png', 'active'],
+      ['Rafael Souza', 'Degrade e barba desenhada', null, 'active'],
     ]);
 
     const barbers = db.prepare('SELECT id FROM barbers').all();
@@ -335,6 +335,9 @@ function reconcileBarbersOnce() {
     const deactivate = db.prepare("UPDATE barbers SET status = 'inactive' WHERE id = ?");
     active.slice(1).forEach((b) => deactivate.run(b.id));
   }
+
+  // Backfill Jackson's real photo if the row already existed without one.
+  db.prepare("UPDATE barbers SET photo = '/uploads/barbers/jackson.png' WHERE lower(name) = 'jackson' AND (photo IS NULL OR photo = '')").run();
 
   db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_single_barber', 'done');
 }

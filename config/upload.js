@@ -26,9 +26,16 @@ const imageFilter = (req, file, cb) => {
   cb(new Error('Apenas arquivos de imagem sao permitidos.'));
 };
 
+// Gallery accepts photos and short videos of the shop/work.
+const galleryFilter = (req, file, cb) => {
+  if (/^image\/(png|jpe?g|webp|gif)$/.test(file.mimetype)) return cb(null, true);
+  if (/^video\/(mp4|webm|quicktime)$/.test(file.mimetype)) return cb(null, true);
+  cb(new Error('Envie apenas fotos ou videos.'));
+};
+
 const uploadBarberPhoto = multer({ storage: makeStorage('barbers'), fileFilter: imageFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 const uploadLogo = multer({ storage: makeStorage('settings'), fileFilter: imageFilter, limits: { fileSize: 5 * 1024 * 1024 } });
-const uploadGalleryPhoto = multer({ storage: makeStorage('gallery'), fileFilter: imageFilter, limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadGalleryPhoto = multer({ storage: makeStorage('gallery'), fileFilter: galleryFilter, limits: { fileSize: 80 * 1024 * 1024 } });
 const uploadDbFile = multer({ dest: TMP_ROOT, limits: { fileSize: 200 * 1024 * 1024 } });
 
 module.exports = { uploadBarberPhoto, uploadLogo, uploadGalleryPhoto, uploadDbFile };
