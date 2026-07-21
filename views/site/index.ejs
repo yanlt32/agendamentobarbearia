@@ -3,7 +3,8 @@
 <%- include('../partials/flash') %>
 
 <!-- HERO -->
-<header class="hero d-flex align-items-center">
+<header class="hero d-flex align-items-center <%= heroPhoto ? 'hero-has-photo' : '' %>"
+  <% if (heroPhoto) { %>style="background-image: url('<%= heroPhoto.path %>')"<% } %>>
   <div class="hero-overlay"></div>
   <div class="container position-relative text-center text-lg-start">
     <div class="row align-items-center">
@@ -118,7 +119,7 @@
           <div class="col-6 col-md-3">
             <div class="gallery-item gallery-item-photo">
               <% if (isVideo) { %>
-                <video src="<%= p.path %>" controls playsinline preload="metadata"></video>
+                <video src="<%= p.path %>" autoplay muted loop playsinline preload="auto"></video>
               <% } else { %>
                 <img src="<%= p.path %>" alt="<%= settings.shop_name %>" loading="lazy">
               <% } %>

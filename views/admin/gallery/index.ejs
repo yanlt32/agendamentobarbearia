@@ -21,8 +21,8 @@
       <div class="col-6 col-md-3">
         <div class="gallery-admin-item">
           <% if (isVideo) { %>
-            <video src="<%= p.path %>" muted></video>
-            <i class="fa-solid fa-circle-play gallery-admin-play"></i>
+            <video src="<%= p.path %>" autoplay muted loop playsinline></video>
+            <i class="fa-solid fa-video gallery-admin-badge" title="Video"></i>
           <% } else { %>
             <img src="<%= p.path %>" alt="Foto da barbearia">
           <% } %>
