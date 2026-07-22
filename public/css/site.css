@@ -69,10 +69,12 @@ body {
 .brand-mark-md .brand-sub { font-size: .6rem; }
 .brand-mark-md .brand-line { min-width: 16px; }
 
+.brand-mark-lg { flex-direction: column; align-items: center; gap: .35rem; }
 .brand-mark-lg .brand-crown { font-size: 2.6rem; }
 .brand-mark-lg .brand-word { font-size: clamp(2.4rem, 5vw, 3.6rem); }
 .brand-mark-lg .brand-sub { font-size: .85rem; }
 .brand-mark-lg .brand-line { min-width: 28px; }
+.brand-mark-lg .brand-text { align-items: center; text-align: center; }
 .brand-logo-img { height: 38px; width: 38px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(205,163,73,0.4); }
 .hero-logo-img { max-height: 190px; }
 .sidebar-logo-img { height: 32px; width: 32px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(205,163,73,0.4); }
@@ -91,15 +93,15 @@ body {
 /* HERO */
 .hero {
   min-height: 92vh;
-  background: radial-gradient(circle at 30% 20%, #2a2a2a, #0d0d0d 70%);
+  background: var(--black);
   background-size: cover;
   background-position: center;
   position: relative;
   overflow: hidden;
 }
-/* No shop photos uploaded yet: designed background graphic instead of a flat gradient. */
+/* No shop photos uploaded yet: flat black backdrop. */
 .hero.hero-has-art {
-  background-image: url('/img/hero-bg.svg');
+  background: var(--black);
 }
 /* One or more gallery photos: crossfading slideshow layers behind the overlay. */
 .hero-slide {

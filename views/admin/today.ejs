@@ -1,0 +1,77 @@
+<%- include('../partials/admin-head') %>
+
+<div class="panel">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <h6 class="mb-0">Agendamentos de hoje</h6>
+      <small class="text-secondary"><%= todayFormatted %> &middot; <%= rows.length %> agendamento<%= rows.length === 1 ? '' : 's' %></small>
+    </div>
+  </div>
+
+  <div class="table-responsive d-none d-md-block">
+    <table class="table table-admin align-middle">
+      <thead>
+        <tr>
+          <th>Hora</th><th>Cliente</th><th>Servico</th><th>Barbeiro</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% rows.forEach(function(a) { %>
+          <% const msg = `Ola ${a.client_name}! \n\nPassando para lembrar do seu horario hoje as ${a.time} na ${settings.shop_name} (${a.service_name}).\n\nAte ja!`; %>
+          <tr>
+            <td><%= a.time %></td>
+            <td><%= a.client_name %><br><small class="text-secondary"><%= a.client_phone %></small></td>
+            <td><%= a.service_name %></td>
+            <td><%= a.barber_name %></td>
+            <td><span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado'})[a.status] %></span></td>
+            <td class="text-end">
+              <% if (a.status === 'pending' || a.status === 'confirmed') { %>
+                <a href="https://wa.me/55<%= a.client_phone.replace(/\D/g,'') %>?text=<%= encodeURIComponent(msg) %>" target="_blank" class="btn btn-gold btn-sm">
+                  <i class="fa-brands fa-whatsapp me-1"></i>Enviar mensagem
+                </a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (rows.length === 0) { %>
+          <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum agendamento para hoje.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MOBILE: card list -->
+  <div class="appt-cards d-md-none">
+    <% if (rows.length === 0) { %>
+      <p class="text-center text-secondary py-4 mb-0">Nenhum agendamento para hoje.</p>
+    <% } %>
+    <% rows.forEach(function(a) { %>
+      <% const msgCard = `Ola ${a.client_name}! \n\nPassando para lembrar do seu horario hoje as ${a.time} na ${settings.shop_name} (${a.service_name}).\n\nAte ja!`; %>
+      <div class="appt-card">
+        <div class="appt-card-top">
+          <span class="appt-card-time"><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
+          <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado'})[a.status] %></span>
+        </div>
+        <div class="appt-card-client">
+          <strong><%= a.client_name %></strong>
+          <div class="appt-card-contact">
+            <a href="tel:<%= a.client_phone.replace(/\D/g,'') %>" class="link-gold"><i class="fa-solid fa-phone me-1"></i><%= a.client_phone %></a>
+          </div>
+        </div>
+        <div class="appt-card-meta">
+          <span><i class="fa-solid fa-scissors me-1"></i><%= a.service_name %></span>
+          <span><i class="fa-solid fa-user-tie me-1"></i><%= a.barber_name %></span>
+        </div>
+        <% if (a.status === 'pending' || a.status === 'confirmed') { %>
+          <div class="appt-card-actions">
+            <a href="https://wa.me/55<%= a.client_phone.replace(/\D/g,'') %>?text=<%= encodeURIComponent(msgCard) %>" target="_blank" class="btn btn-gold btn-sm w-100">
+              <i class="fa-brands fa-whatsapp me-1"></i>Enviar mensagem
+            </a>
+          </div>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<%- include('../partials/admin-footer') %>

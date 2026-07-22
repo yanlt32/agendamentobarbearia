@@ -34,4 +34,15 @@ function index(req, res) {
   });
 }
 
-module.exports = { index };
+function today(req, res) {
+  const { rows } = Appointment.list({ range: 'today', perPage: 200 });
+  rows.sort((a, b) => a.time.localeCompare(b.time));
+
+  res.render('admin/today', {
+    title: 'Agendamentos de hoje',
+    rows,
+    todayFormatted: dayjs().format('DD/MM/YYYY'),
+  });
+}
+
+module.exports = { index, today };

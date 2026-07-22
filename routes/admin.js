@@ -21,6 +21,7 @@ router.use(requireAuth);
 
 router.get('/', (req, res) => res.redirect('/admin/dashboard'));
 router.get('/dashboard', dashboardController.index);
+router.get('/hoje', dashboardController.today);
 
 // Live updates: any device with an admin page open gets notified the
 // instant an appointment is created/edited/cancelled anywhere else.
