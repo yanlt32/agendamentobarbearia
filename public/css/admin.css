@@ -39,6 +39,16 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 .brand-mark-sm .brand-crown { font-size: 1.05rem; }
 .brand-mark-sm .brand-word { font-size: 1.05rem; }
 .sidebar-logo-img { height: 32px; width: 32px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(205,163,73,0.4); }
+.avatar-sm {
+  height: 32px; width: 32px; border-radius: 50%; object-fit: cover;
+  border: 1px solid rgba(205,163,73,0.4); flex-shrink: 0;
+}
+.avatar-sm-fallback {
+  height: 32px; width: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(205,163,73,0.12); color: var(--gold);
+  border: 1px solid rgba(205,163,73,0.4);
+}
 
 .admin-wrapper { display: flex; min-height: 100vh; }
 

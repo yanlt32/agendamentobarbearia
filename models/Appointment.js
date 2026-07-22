@@ -2,7 +2,7 @@ const { db } = require('../database/database');
 
 const BASE_SELECT = `
   SELECT a.*, c.name AS client_name, c.phone AS client_phone,
-         b.name AS barber_name, s.name AS service_name, s.duration_minutes
+         b.name AS barber_name, b.photo AS barber_photo, s.name AS service_name, s.duration_minutes
   FROM appointments a
   JOIN clients c ON c.id = a.client_id
   JOIN barbers b ON b.id = a.barber_id
