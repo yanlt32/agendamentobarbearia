@@ -34,7 +34,12 @@
           <!-- STEP 1: SERVICO -->
           <div class="booking-pane" data-pane="1">
             <h5 class="mb-3">Escolha o servico</h5>
-            <div class="row g-3">
+            <% if (services.length > 4) { %>
+              <button type="button" class="btn btn-outline-light btn-sm w-100 mb-3 d-md-none" id="btnMoreServices">
+                <i class="fa-solid fa-chevron-down me-1"></i>Mais servicos abaixo
+              </button>
+            <% } %>
+            <div class="row g-3" id="serviceListRow">
               <% services.forEach(function(s) { %>
                 <div class="col-md-6">
                   <div class="choice-card" data-select="service" data-id="<%= s.id %>" data-name="<%= s.name %>">
@@ -60,8 +65,18 @@
           <!-- STEP 3: DATA -->
           <div class="booking-pane d-none" data-pane="3">
             <h5 class="mb-3">Escolha a data</h5>
-            <input type="date" class="form-control form-control-lg" id="date_input" name="date"
-                   min="<%= minDate %>" max="<%= maxDate %>" required>
+            <div class="inline-calendar" id="inlineCalendar" data-min="<%= minDate %>" data-max="<%= maxDate %>">
+              <div class="cal-header">
+                <button type="button" class="cal-nav-btn" id="calPrev" aria-label="Mes anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                <strong id="calLabel"></strong>
+                <button type="button" class="cal-nav-btn" id="calNext" aria-label="Proximo mes"><i class="fa-solid fa-chevron-right"></i></button>
+              </div>
+              <div class="cal-weekdays">
+                <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+              </div>
+              <div class="cal-grid" id="calGrid"></div>
+            </div>
+            <input type="hidden" id="date_input" name="date" required>
           </div>
 
           <!-- STEP 4: HORARIO -->

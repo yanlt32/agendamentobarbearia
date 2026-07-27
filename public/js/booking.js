@@ -38,10 +38,16 @@
     if (isLast) buildSummary();
   }
 
+  function formatDateBR(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
   function buildSummary() {
     document.getElementById('summaryText').innerHTML =
       `<strong>${state.serviceName}</strong> com <strong>${state.barberName}</strong><br>` +
-      `${state.date} as ${state.time} - R$ ${state.servicePrice.toFixed(2).replace('.', ',')}`;
+      `${formatDateBR(state.date)} as ${state.time} - R$ ${state.servicePrice.toFixed(2).replace('.', ',')}`;
   }
 
   function canAdvance() {
@@ -95,9 +101,87 @@
     });
   }
 
-  document.getElementById('date_input').addEventListener('change', function () {
-    state.date = this.value;
-  });
+  // STEP 3: inline calendar (kept always open so people don't miss a collapsed date picker)
+  const calendarEl = document.getElementById('inlineCalendar');
+  if (calendarEl) {
+    const dateInput = document.getElementById('date_input');
+    const calLabel = document.getElementById('calLabel');
+    const calGrid = document.getElementById('calGrid');
+    const calPrev = document.getElementById('calPrev');
+    const calNext = document.getElementById('calNext');
+
+    const minDate = calendarEl.dataset.min;
+    const maxDate = calendarEl.dataset.max;
+    const [minYear, minMonth] = minDate.split('-').map(Number);
+    const [maxYear, maxMonth] = maxDate.split('-').map(Number);
+    let viewYear = minYear;
+    let viewMonth = minMonth - 1;
+
+    const monthNames = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function toISO(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+
+    function renderCalendar() {
+      calLabel.textContent = `${monthNames[viewMonth]} ${viewYear}`;
+      calGrid.innerHTML = '';
+
+      const firstWeekday = new Date(viewYear, viewMonth, 1).getDay();
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const todayIso = new Date().toISOString().slice(0, 10);
+
+      for (let i = 0; i < firstWeekday; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-day empty';
+        calGrid.appendChild(empty);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const iso = toISO(viewYear, viewMonth, d);
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
+        cell.textContent = d;
+        const disabled = iso < minDate || iso > maxDate;
+        if (disabled) cell.classList.add('disabled');
+        if (iso === todayIso) cell.classList.add('today');
+        if (iso === dateInput.value) cell.classList.add('selected');
+        if (!disabled) {
+          cell.addEventListener('click', function () {
+            calGrid.querySelectorAll('.cal-day').forEach((c) => c.classList.remove('selected'));
+            cell.classList.add('selected');
+            dateInput.value = iso;
+            state.date = iso;
+          });
+        }
+        calGrid.appendChild(cell);
+      }
+
+      calPrev.disabled = viewYear === minYear && viewMonth === minMonth - 1;
+      calNext.disabled = viewYear === maxYear && viewMonth === maxMonth - 1;
+    }
+
+    calPrev.addEventListener('click', function () {
+      viewMonth -= 1;
+      if (viewMonth < 0) { viewMonth = 11; viewYear -= 1; }
+      renderCalendar();
+    });
+    calNext.addEventListener('click', function () {
+      viewMonth += 1;
+      if (viewMonth > 11) { viewMonth = 0; viewYear += 1; }
+      renderCalendar();
+    });
+
+    renderCalendar();
+  }
+
+  // Mobile nudge: the service list can run longer than one screen, so point
+  // people at the options below the fold instead of letting them miss them.
+  const btnMoreServices = document.getElementById('btnMoreServices');
+  if (btnMoreServices) {
+    btnMoreServices.addEventListener('click', function () {
+      document.getElementById('serviceListRow').scrollIntoView({ behavior: 'smooth', block: 'end' });
+    });
+  }
 
   async function loadTimes() {
     const container = document.getElementById('timeSlots');
