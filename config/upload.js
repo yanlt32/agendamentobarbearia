@@ -2,7 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 
-const UPLOAD_ROOT = path.join(__dirname, '..', 'public', 'uploads');
+// Same reasoning as database/database.js: on hosts like Render the app
+// folder is rebuilt from git on every deploy, so photos saved under
+// public/uploads would vanish. Point UPLOADS_DIR at a persistent disk's
+// mount path to keep them; unset, this defaults to the old in-project path.
+const UPLOAD_ROOT = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'public', 'uploads');
 const TMP_ROOT = path.join(__dirname, '..', 'database', 'tmp');
 
 ['barbers', 'settings', 'gallery'].forEach((dir) => {
@@ -38,4 +42,4 @@ const uploadLogo = multer({ storage: makeStorage('settings'), fileFilter: imageF
 const uploadGalleryPhoto = multer({ storage: makeStorage('gallery'), fileFilter: galleryFilter, limits: { fileSize: 80 * 1024 * 1024 } });
 const uploadDbFile = multer({ dest: TMP_ROOT, limits: { fileSize: 200 * 1024 * 1024 } });
 
-module.exports = { uploadBarberPhoto, uploadLogo, uploadGalleryPhoto, uploadDbFile };
+module.exports = { uploadBarberPhoto, uploadLogo, uploadGalleryPhoto, uploadDbFile, UPLOAD_ROOT };

@@ -1,6 +1,8 @@
 node_modules/
 database/*.db
 database/*.db-journal
+database/*.db-shm
+database/*.db-wal
 database/backups/*.db
 .env
 *.log

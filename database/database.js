@@ -3,10 +3,16 @@ const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const { DatabaseSync } = require('node:sqlite');
 
-const DB_DIR = __dirname;
+// On Render (and similar hosts) the app's own folder is wiped on every
+// deploy, so the SQLite file must live on a mounted persistent disk instead.
+// Set DB_DIR to that disk's mount path (e.g. Render's "Persistent Disk"
+// feature) and the database + its backups survive redeploys. Without it,
+// this falls back to the local project folder, same as before.
+const DB_DIR = process.env.DB_DIR || __dirname;
 const DB_PATH = path.join(DB_DIR, 'barbershop.db');
 const BACKUP_DIR = path.join(DB_DIR, 'backups');
 
+if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
 if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
 
 const db = new DatabaseSync(DB_PATH);
@@ -270,22 +276,20 @@ function reconcileServicesOnce() {
   const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_price_table'").get();
   if (marker) return;
 
-  // Duration defaults to 1h across the board for now -- easy to fine-tune
-  // per service later from Admin > Servicos > Editar.
   const priceTable = [
-    { matchNames: ['corte masculino', 'corte'], name: 'Corte', price: 30, duration_minutes: 60, category: 'Corte' },
-    { matchNames: ['barba'], name: 'Barba', price: 20, duration_minutes: 60, category: 'Barba' },
+    { matchNames: ['corte masculino', 'corte'], name: 'Corte', price: 30, duration_minutes: 40, category: 'Corte' },
+    { matchNames: ['barba'], name: 'Barba', price: 20, duration_minutes: 20, category: 'Barba' },
     { matchNames: ['corte + barba'], name: 'Corte + Barba', price: 50, duration_minutes: 60, category: 'Combo' },
     { matchNames: ['corte + barba + sobrancelha'], name: 'Corte + Barba + Sobrancelha', price: 55, duration_minutes: 60, category: 'Combo' },
     { matchNames: ['pigmentacao'], name: 'Pigmentacao', price: 25, duration_minutes: 60, category: 'Pigmentacao' },
-    { matchNames: ['sobrancelha', 'sombrancelha'], name: 'Sobrancelha', price: 7, duration_minutes: 60, category: 'Sobrancelha' },
-    { matchNames: ['hidratacao'], name: 'Hidratacao', price: 20, duration_minutes: 60, category: 'Tratamento', description: 'Hidratacao capilar' },
+    { matchNames: ['sobrancelha', 'sombrancelha'], name: 'Sobrancelha', price: 7, duration_minutes: 10, category: 'Sobrancelha' },
+    { matchNames: ['hidratacao'], name: 'Hidratacao', price: 20, duration_minutes: 30, category: 'Tratamento', description: 'Hidratacao capilar' },
     { matchNames: ['hidratacao barba'], name: 'Hidratacao Barba', price: 10, duration_minutes: 60, category: 'Tratamento', description: 'Hidratacao para a barba' },
-    { matchNames: ['limpeza de pele'], name: 'Limpeza de Pele', price: 20, duration_minutes: 60, category: 'Tratamento' },
+    { matchNames: ['limpeza de pele'], name: 'Limpeza de Pele', price: 20, duration_minutes: 30, category: 'Tratamento' },
     { matchNames: ['selagem'], name: 'Selagem', price: 60, duration_minutes: 60, category: 'Tratamento' },
     { matchNames: ['luzes'], name: 'Luzes', price: 100, duration_minutes: 60, category: 'Coloracao' },
     { matchNames: ['platinado'], name: 'Platinado', price: 130, duration_minutes: 60, category: 'Coloracao' },
-    { matchNames: ['pezinho'], name: 'Pezinho', price: 10, duration_minutes: 60, category: 'Corte' },
+    { matchNames: ['pezinho'], name: 'Pezinho', price: 10, duration_minutes: 10, category: 'Corte' },
   ];
 
   const existing = db.prepare('SELECT id, name FROM services').all();
@@ -342,9 +346,42 @@ function reconcileBarbersOnce() {
   db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_single_barber', 'done');
 }
 
+// One-time correction: reconcileServicesOnce() originally shipped every
+// service at a flat 60min guess. Any database created before this fix
+// (including ones already deployed) has the wrong durations baked in and
+// won't get touched by reconcileServicesOnce() again since it's marker-guarded.
+// This runs once, independently, to bring existing rows in line with the
+// barber's real per-service times.
+function fixServiceDurationsOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_duration_fix_v1'").get();
+  if (marker) return;
+
+  const fixes = [
+    { matchNames: ['corte masculino', 'corte'], duration_minutes: 40 },
+    { matchNames: ['barba'], duration_minutes: 20 },
+    { matchNames: ['sobrancelha', 'sombrancelha'], duration_minutes: 10 },
+    { matchNames: ['hidratacao'], duration_minutes: 30 },
+    { matchNames: ['limpeza de pele'], duration_minutes: 30 },
+    { matchNames: ['pezinho'], duration_minutes: 10 },
+  ];
+
+  const existing = db.prepare('SELECT id, name FROM services').all();
+  const updateStmt = db.prepare('UPDATE services SET duration_minutes = ? WHERE id = ?');
+  const tx = db.transaction(() => {
+    fixes.forEach((item) => {
+      const match = existing.find((row) => item.matchNames.includes(normalizeName(row.name)));
+      if (match) updateStmt.run(item.duration_minutes, match.id);
+    });
+  });
+  tx();
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_duration_fix_v1', 'done');
+}
+
 createSchema();
 seed();
 reconcileServicesOnce();
 reconcileBarbersOnce();
+fixServiceDurationsOnce();
 
 module.exports = { db, DB_PATH, BACKUP_DIR, backup };

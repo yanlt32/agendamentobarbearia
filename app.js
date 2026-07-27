@@ -1,3 +1,10 @@
+// Must run before anything touches Date/dayjs: hosts like Render run
+// containers in UTC, not the shop's local time. Without this, "today" and
+// "current time" drift from Brazil's clock and every availability check
+// (past-time filtering, day-of-week schedule lookup) breaks in production
+// while looking perfectly fine on a dev machine already set to Brazil time.
+process.env.TZ = 'America/Sao_Paulo';
+
 require('dotenv').config();
 require('./database/database');
 
@@ -24,6 +31,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// When UPLOADS_DIR points at a persistent disk (see config/upload.js), photos
+// live outside public/ and need their own static route under the same /uploads
+// URL prefix the app already generates in <img src>.
+if (process.env.UPLOADS_DIR) {
+  app.use('/uploads', express.static(process.env.UPLOADS_DIR));
+}
 
 // Sessao em memoria: simples e evita conflitos de lock de arquivo com
 // sincronizacao de nuvem (OneDrive/Google Drive) na pasta do projeto.
