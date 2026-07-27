@@ -118,11 +118,16 @@ function setStatus(req, res) {
     if (status === 'cancelled') {
       notifications.notifyCancellation(appointment).catch(() => {});
     }
+    if (status === 'no_show') {
+      // Blocks this phone from booking online again until the barber talks
+      // to the client and clears it manually from Admin > Clientes.
+      Client.blacklist(appointment.client_id);
+    }
   }
 
   Log.record(req.session.user.id, 'appointment_status', `Agendamento #${appointment.id} -> ${status}.`);
   realtime.broadcast('status', { id: appointment.id, status });
-  req.flash('success', 'Status atualizado.');
+  req.flash('success', status === 'no_show' ? 'Marcado como nao compareceu. Cliente bloqueado para novos agendamentos online.' : 'Status atualizado.');
   res.redirect(req.get('referer') || '/admin/appointments');
 }
 

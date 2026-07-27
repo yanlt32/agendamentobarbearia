@@ -28,17 +28,17 @@ function findByPhone(phone) {
 
 function create(data) {
   const info = db.prepare(`
-    INSERT INTO clients (name, phone, email, birth_date, notes)
-    VALUES (@name, @phone, @email, @birth_date, @notes)
-  `).run({ email: null, birth_date: null, notes: null, ...data });
+    INSERT INTO clients (name, phone, cpf, email, birth_date, notes)
+    VALUES (@name, @phone, @cpf, @email, @birth_date, @notes)
+  `).run({ cpf: null, email: null, birth_date: null, notes: null, ...data });
   return info.lastInsertRowid;
 }
 
 function update(id, data) {
   db.prepare(`
-    UPDATE clients SET name=@name, phone=@phone, email=@email, birth_date=@birth_date, notes=@notes
+    UPDATE clients SET name=@name, phone=@phone, cpf=@cpf, email=@email, birth_date=@birth_date, notes=@notes
     WHERE id=@id
-  `).run({ email: null, birth_date: null, notes: null, ...data, id });
+  `).run({ cpf: null, email: null, birth_date: null, notes: null, ...data, id });
 }
 
 function remove(id) {
@@ -68,4 +68,17 @@ function newClientsBetween(start, end) {
   return db.prepare('SELECT COUNT(*) AS c FROM clients WHERE date(created_at) BETWEEN ? AND ?').get(start, end).c;
 }
 
-module.exports = { list, all, find, findByPhone, create, update, remove, history, registerVisit, count, newClientsBetween };
+// No-show handling: blocks self-service online booking for this phone until
+// the barber talks to the client and clears it manually from the admin panel.
+function blacklist(id) {
+  db.prepare('UPDATE clients SET blacklisted = 1 WHERE id = ?').run(id);
+}
+
+function unblacklist(id) {
+  db.prepare('UPDATE clients SET blacklisted = 0 WHERE id = ?').run(id);
+}
+
+module.exports = {
+  list, all, find, findByPhone, create, update, remove, history, registerVisit, count, newClientsBetween,
+  blacklist, unblacklist,
+};

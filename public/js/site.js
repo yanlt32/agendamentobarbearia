@@ -31,6 +31,24 @@
 
   window.maskPhone = maskPhone;
 
+  // CPF mask helper (used by any input.cpf-mask)
+  function maskCpf(value) {
+    let v = value.replace(/\D/g, '').slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    return v;
+  }
+  document.querySelectorAll('input[name="cpf"], .cpf-mask').forEach(function (input) {
+    input.addEventListener('input', function () {
+      input.value = maskCpf(input.value);
+      const digits = input.value.replace(/\D/g, '');
+      input.setCustomValidity(digits.length === 11 ? '' : 'Informe um CPF valido, com 11 numeros.');
+    });
+  });
+
+  window.maskCpf = maskCpf;
+
   // Hero background slideshow: crossfades between uploaded gallery photos.
   const slides = document.querySelectorAll('.hero-slide');
   if (slides.length > 1) {

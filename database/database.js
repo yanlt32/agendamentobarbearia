@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { DatabaseSync } = require('node:sqlite');
 
@@ -63,11 +64,13 @@ function createSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       phone TEXT NOT NULL,
+      cpf TEXT, -- used with phone to authenticate self-service cancel/reschedule lookups
       email TEXT,
       birth_date TEXT,
       notes TEXT,
       visits_count INTEGER NOT NULL DEFAULT 0,
       last_visit TEXT,
+      blacklisted INTEGER NOT NULL DEFAULT 0, -- set on no-show; blocks self-service online booking until the barber clears it
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -130,6 +133,7 @@ function createSchema() {
       status TEXT NOT NULL DEFAULT 'pending', -- pending, confirmed, completed, cancelled
       notes TEXT,
       price REAL NOT NULL DEFAULT 0,
+      access_token TEXT, -- private link key for client self-service cancel/reschedule (see myAppointmentsController)
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -182,23 +186,23 @@ function seed() {
     const insertMany = db.transaction((rows) => rows.forEach((r) => insert.run(...r)));
     insertMany([
       [0, null, null, 0], // domingo fechado
-      [1, '08:00', '19:00', 1],
-      [2, '08:00', '19:00', 1],
-      [3, '08:00', '19:00', 1],
-      [4, '08:00', '19:00', 1],
-      [5, '08:00', '19:00', 1],
-      [6, '08:00', '19:00', 1],
+      [1, '09:00', '19:00', 1],
+      [2, '09:00', '19:00', 1],
+      [3, '09:00', '19:00', 1],
+      [4, '08:00', '20:00', 1],
+      [5, '08:00', '20:00', 1],
+      [6, '08:00', '20:00', 1],
     ]);
   }
 
   const settingsDefaults = {
     shop_name: 'Jackson Barbearia',
     logo: '',
-    phone: '(11) 99999-9999',
-    whatsapp: '5511999999999',
-    instagram: 'https://www.instagram.com/jackson_barbearia01/',
+    phone: '(77) 8877-6293',
+    whatsapp: '557788776293',
+    instagram: 'https://www.instagram.com/jackson_barbearia01?igsh=b3Fiam52ZW1nNHM1&utm_source=qr',
     facebook: 'https://facebook.com/',
-    address: 'Lagoa das Flores',
+    address: 'Rua Coronel Maneca Santos, N 05 - Lagoa das Flores',
     maps_embed: '',
     slot_interval_minutes: '30',
     theme: 'dark',
@@ -243,9 +247,9 @@ function seed() {
     const schedule = db.prepare('INSERT INTO barber_schedules (barber_id, weekday, start_time, end_time, is_off) VALUES (?, ?, ?, ?, ?)');
     const scheduleAll = db.transaction(() => {
       barbers.forEach((b) => {
-        for (let wd = 1; wd <= 6; wd++) {
-          schedule.run(b.id, wd, '08:00', '19:00', 0);
-        }
+        // Segunda-Quarta 09:00-19:00, Quinta-Sabado 08:00-20:00, domingo fechado.
+        for (let wd = 1; wd <= 3; wd++) schedule.run(b.id, wd, '09:00', '19:00', 0);
+        for (let wd = 4; wd <= 6; wd++) schedule.run(b.id, wd, '08:00', '20:00', 0);
       });
     });
     scheduleAll();
@@ -378,10 +382,94 @@ function fixServiceDurationsOnce() {
   db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_duration_fix_v1', 'done');
 }
 
+// Adds access_token to a database created before this column existed.
+// CREATE TABLE IF NOT EXISTS only covers brand-new tables, so an existing
+// appointments table needs its own ALTER TABLE -- guarded because SQLite
+// has no reliable ADD COLUMN IF NOT EXISTS across every version.
+function ensureAccessTokenColumn() {
+  const cols = db.prepare("PRAGMA table_info(appointments)").all();
+  if (cols.some((c) => c.name === 'access_token')) return;
+  db.exec('ALTER TABLE appointments ADD COLUMN access_token TEXT');
+}
+
+function ensureBlacklistColumn() {
+  const cols = db.prepare("PRAGMA table_info(clients)").all();
+  if (cols.some((c) => c.name === 'blacklisted')) return;
+  db.exec('ALTER TABLE clients ADD COLUMN blacklisted INTEGER NOT NULL DEFAULT 0');
+}
+
+function ensureCpfColumn() {
+  const cols = db.prepare("PRAGMA table_info(clients)").all();
+  if (cols.some((c) => c.name === 'cpf')) return;
+  db.exec('ALTER TABLE clients ADD COLUMN cpf TEXT');
+}
+
+// Backfills a private access_token for any appointment that doesn't have
+// one yet (pre-existing rows, or rows from before this feature shipped).
+// Cheap no-op once every row has a token, so it's safe to run on every boot.
+function backfillAccessTokens() {
+  const missing = db.prepare('SELECT id FROM appointments WHERE access_token IS NULL OR access_token = ?').all('');
+  if (missing.length === 0) return;
+  const update = db.prepare('UPDATE appointments SET access_token = ? WHERE id = ?');
+  missing.forEach((row) => update.run(crypto.randomBytes(20).toString('hex'), row.id));
+}
+
+// One-time real-world info update: the shop's actual address, hours and
+// Instagram handle, provided by the owner after initial setup. Runs once,
+// independently of seed()'s "fill if missing" defaults, so it corrects a
+// database that already had the old placeholder values (including one
+// already deployed and seeded before this info was known).
+function applyShopInfoUpdateOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_shop_info_v1'").get();
+  if (marker) return;
+
+  db.prepare('UPDATE settings SET value = ? WHERE key = ?').run('Rua Coronel Maneca Santos, N 05 - Lagoa das Flores', 'address');
+  db.prepare('UPDATE settings SET value = ? WHERE key = ?').run('https://www.instagram.com/jackson_barbearia01?igsh=b3Fiam52ZW1nNHM1&utm_source=qr', 'instagram');
+
+  const whUpdate = db.prepare('UPDATE working_hours SET open_time = ?, close_time = ?, is_open = 1 WHERE weekday = ?');
+  const tx = db.transaction(() => {
+    [1, 2, 3].forEach((wd) => whUpdate.run('09:00', '19:00', wd));
+    [4, 5, 6].forEach((wd) => whUpdate.run('08:00', '20:00', wd));
+  });
+  tx();
+
+  const barberIds = db.prepare('SELECT id FROM barbers').all().map((b) => b.id);
+  const bsUpdate = db.prepare('UPDATE barber_schedules SET start_time = ?, end_time = ?, is_off = 0 WHERE barber_id = ? AND weekday = ?');
+  const bsTx = db.transaction(() => {
+    barberIds.forEach((id) => {
+      [1, 2, 3].forEach((wd) => bsUpdate.run('09:00', '19:00', id, wd));
+      [4, 5, 6].forEach((wd) => bsUpdate.run('08:00', '20:00', id, wd));
+    });
+  });
+  bsTx();
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_shop_info_v1', 'done');
+}
+
+// One-time fix for the shop's real contact number, same reasoning as
+// applyShopInfoUpdateOnce() above -- separate migration since that one
+// already ran (and its marker blocks it from running again) before this
+// number was known.
+function applyShopPhoneUpdateOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_shop_phone_v1'").get();
+  if (marker) return;
+
+  db.prepare('UPDATE settings SET value = ? WHERE key = ?').run('(77) 8877-6293', 'phone');
+  db.prepare('UPDATE settings SET value = ? WHERE key = ?').run('557788776293', 'whatsapp');
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_shop_phone_v1', 'done');
+}
+
 createSchema();
 seed();
 reconcileServicesOnce();
 reconcileBarbersOnce();
 fixServiceDurationsOnce();
+ensureAccessTokenColumn();
+backfillAccessTokens();
+ensureBlacklistColumn();
+ensureCpfColumn();
+applyShopInfoUpdateOnce();
+applyShopPhoneUpdateOnce();
 
 module.exports = { db, DB_PATH, BACKUP_DIR, backup };

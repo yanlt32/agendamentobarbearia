@@ -17,7 +17,7 @@
       </thead>
       <tbody>
         <% rows.forEach(function(a) { %>
-          <% const msg = `Ola ${a.client_name}! \n\nPassando para lembrar do seu horario hoje as ${a.time} na ${settings.shop_name} (${a.service_name}).\n\nAte ja!`; %>
+          <% const msg = `Ola ${a.client_name}! \n\nPassando para lembrar do seu horario hoje as ${a.time} na ${settings.shop_name} (${a.service_name}).\n\nPara cancelar ou remarcar: ${baseUrl}/meu-agendamento/${a.access_token}\n\nAte ja!`; %>
           <tr>
             <td><%= a.time %></td>
             <td><%= a.client_name %><br><small class="text-secondary"><%= a.client_phone %></small></td>
@@ -32,7 +32,7 @@
                 <%= a.barber_name %>
               </div>
             </td>
-            <td><span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado'})[a.status] %></span></td>
+            <td><span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[a.status] %></span></td>
             <td class="text-end">
               <% if (a.status === 'pending' || a.status === 'confirmed') { %>
                 <a href="https://wa.me/55<%= a.client_phone.replace(/\D/g,'') %>?text=<%= encodeURIComponent(msg) %>" target="_blank" class="btn btn-gold btn-sm">
@@ -55,11 +55,11 @@
       <p class="text-center text-secondary py-4 mb-0">Nenhum agendamento para hoje.</p>
     <% } %>
     <% rows.forEach(function(a) { %>
-      <% const msgCard = `Ola ${a.client_name}! \n\nPassando para lembrar do seu horario hoje as ${a.time} na ${settings.shop_name} (${a.service_name}).\n\nAte ja!`; %>
+      <% const msgCard = `Ola ${a.client_name}! \n\nPassando para lembrar do seu horario hoje as ${a.time} na ${settings.shop_name} (${a.service_name}).\n\nPara cancelar ou remarcar: ${baseUrl}/meu-agendamento/${a.access_token}\n\nAte ja!`; %>
       <div class="appt-card">
         <div class="appt-card-top">
           <span class="appt-card-time"><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
-          <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado'})[a.status] %></span>
+          <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[a.status] %></span>
         </div>
         <div class="appt-card-client">
           <strong><%= a.client_name %></strong>

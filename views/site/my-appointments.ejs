@@ -1,0 +1,114 @@
+<%- include('../partials/site-head') %>
+<%- include('../partials/site-nav') %>
+<%- include('../partials/flash') %>
+
+<section class="booking-section">
+  <div class="container">
+    <div class="text-center mb-5 pt-4">
+      <p class="eyebrow gold-text">Consulta rapida</p>
+      <h1 class="section-title">Meus Agendamentos</h1>
+      <p class="text-secondary">Informe o telefone e os 3 digitos do CPF (os que vem antes do verificador) usados no agendamento.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <form action="/meus-agendamentos" method="POST" class="booking-card row g-2 align-items-end mb-4">
+          <div class="col-md-7">
+            <label class="form-label small">Telefone</label>
+            <input type="text" name="phone" class="form-control form-control-lg phone-mask" placeholder="(00) 00000-0000"
+                   value="<%= phone %>" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small">3 digitos do CPF</label>
+            <input type="text" name="cpf3" class="form-control form-control-lg" placeholder="000" maxlength="3"
+                   inputmode="numeric" pattern="\d{3}" value="<%= cpf3 %>" required>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-gold btn-lg w-100"><i class="fa-solid fa-magnifying-glass"></i></button>
+          </div>
+          <div class="col-12">
+            <small class="text-secondary">Ex: CPF 123.456.<strong>789</strong>-00 &rarr; digite 789</small>
+          </div>
+        </form>
+
+        <% if (searched) { %>
+          <% if (identityError) { %>
+            <div class="booking-card text-center text-secondary">
+              <i class="fa-regular fa-face-frown fa-2x mb-3 d-block gold-text"></i>
+              Nao encontramos um agendamento com esses dados.<br>
+              Confira o telefone e os 3 digitos do CPF (antes do verificador) usados na hora de agendar.
+            </div>
+          <% } else { %>
+            <p class="text-secondary mb-4">Ola, <strong class="gold-text"><%= foundClient.name %></strong>.</p>
+
+            <h5 class="mb-3">Proximos agendamentos</h5>
+            <% if (upcoming.length === 0) { %>
+              <div class="booking-card text-center text-secondary mb-4">Nenhum agendamento futuro.</div>
+            <% } else { %>
+              <div class="mb-4">
+                <% upcoming.forEach(function (a) { %>
+                  <div class="my-appt-card">
+                    <div class="my-appt-top">
+                      <span><i class="fa-regular fa-calendar me-1"></i><%= a.date.split('-').reverse().join('/') %></span>
+                      <span><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
+                      <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[a.status] %></span>
+                    </div>
+                    <div class="my-appt-meta mb-3">
+                      <span><i class="fa-solid fa-scissors me-1"></i><%= a.service_name %></span>
+                      <span><i class="fa-solid fa-user-tie me-1"></i><%= a.barber_name %></span>
+                      <span class="gold-text fw-semibold">R$ <%= a.service_price.toFixed(2).replace('.', ',') %></span>
+                    </div>
+                    <% if (a.canManage) { %>
+                      <div class="d-flex gap-2 flex-wrap">
+                        <form action="/meus-agendamentos/<%= a.id %>/remarcar" method="POST"
+                              onsubmit="return confirm('Isso vai liberar seu horario atual. Voce escolhe um novo em seguida. Continuar?');">
+                          <input type="hidden" name="phone" value="<%= phone %>">
+                          <input type="hidden" name="cpf3" value="<%= cpf3 %>">
+                          <button type="submit" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-clock-rotate-left me-1"></i>Remarcar</button>
+                        </form>
+                        <form action="/meus-agendamentos/<%= a.id %>/cancelar" method="POST"
+                              onsubmit="return confirm('Cancelar este agendamento?');">
+                          <input type="hidden" name="phone" value="<%= phone %>">
+                          <input type="hidden" name="cpf3" value="<%= cpf3 %>">
+                          <button type="submit" class="btn btn-outline-light btn-sm text-danger"><i class="fa-solid fa-ban me-1"></i>Cancelar</button>
+                        </form>
+                      </div>
+                    <% } else if (['pending', 'confirmed'].includes(a.status)) { %>
+                      <p class="text-secondary small mb-0">
+                        <i class="fa-solid fa-circle-info gold-text me-1"></i>
+                        Cancelamentos e remarcacoes so ate 2h antes. Fale pelo
+                        <a href="<%= settings.whatsapp ? 'https://wa.me/' + settings.whatsapp : '#' %>" target="_blank" class="link-gold">WhatsApp</a>.
+                      </p>
+                    <% } %>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+
+            <% if (past.length > 0) { %>
+              <h5 class="mb-3">Historico</h5>
+              <div>
+                <% past.forEach(function (a) { %>
+                  <div class="my-appt-card my-appt-card-past">
+                    <div class="my-appt-top">
+                      <span><i class="fa-regular fa-calendar me-1"></i><%= a.date.split('-').reverse().join('/') %></span>
+                      <span><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
+                      <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[a.status] %></span>
+                    </div>
+                    <div class="my-appt-meta">
+                      <span><i class="fa-solid fa-scissors me-1"></i><%= a.service_name %></span>
+                      <span><i class="fa-solid fa-user-tie me-1"></i><%= a.barber_name %></span>
+                      <span class="text-secondary">R$ <%= a.service_price.toFixed(2).replace('.', ',') %></span>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/site-footer') %>

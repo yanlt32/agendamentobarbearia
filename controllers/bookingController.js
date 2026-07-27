@@ -11,6 +11,17 @@ const realtime = require('../utils/realtime');
 
 function showBooking(req, res) {
   const barbers = Barber.all({ onlyActive: true });
+
+  // Coming from "Remarcar": the old appointment's own access_token (still
+  // valid even after it was cancelled) proves this request already went
+  // through identity verification, so the client shouldn't have to retype
+  // name/phone/CPF/email for the new booking.
+  let prefillClient = null;
+  if (req.query.prefill) {
+    const oldAppointment = Appointment.findByToken(req.query.prefill);
+    if (oldAppointment) prefillClient = Client.find(oldAppointment.client_id);
+  }
+
   res.render('site/booking', {
     title: 'Agendar Horario',
     services: Service.all({ onlyActive: true }),
@@ -18,6 +29,7 @@ function showBooking(req, res) {
     singleBarber: barbers.length === 1 ? barbers[0] : null,
     minDate: dayjs().format('YYYY-MM-DD'),
     maxDate: dayjs().add(60, 'day').format('YYYY-MM-DD'),
+    prefillClient,
   });
 }
 
@@ -48,9 +60,9 @@ function availableTimes(req, res) {
 }
 
 async function createBooking(req, res) {
-  const { service_id, barber_id, date, time, name, phone, email, notes } = req.body;
+  const { service_id, barber_id, date, time, name, phone, cpf, email, notes } = req.body;
 
-  if (!service_id || !barber_id || !date || !time || !name || !phone) {
+  if (!service_id || !barber_id || !date || !time || !name || !phone || !cpf) {
     req.flash('error', 'Preencha todos os campos obrigatorios.');
     return res.redirect('/agendar');
   }
@@ -58,6 +70,21 @@ async function createBooking(req, res) {
   const phoneDigits = String(phone).replace(/\D/g, '');
   if (phoneDigits.length < 10 || phoneDigits.length > 11) {
     req.flash('error', 'Informe um numero de WhatsApp valido, com DDD.');
+    return res.redirect('/agendar');
+  }
+
+  const cpfDigits = String(cpf).replace(/\D/g, '');
+  if (cpfDigits.length !== 11) {
+    req.flash('error', 'Informe um CPF valido, com 11 numeros.');
+    return res.redirect('/agendar');
+  }
+
+  // No-show blacklist: set by the barber from the admin panel after a client
+  // misses an appointment. Blocks self-service booking until they talk it
+  // through with the barber directly (who can clear it from Admin > Clientes).
+  let client = Client.findByPhone(phone);
+  if (client && client.blacklisted) {
+    req.flash('error', 'Nao foi possivel concluir o agendamento online. Entre em contato com a barbearia.');
     return res.redirect('/agendar');
   }
 
@@ -78,10 +105,14 @@ async function createBooking(req, res) {
     return res.redirect('/agendar');
   }
 
-  let client = Client.findByPhone(phone);
   if (!client) {
-    const clientId = Client.create({ name, phone, email: email || null });
+    const clientId = Client.create({ name, phone, cpf, email: email || null });
     client = Client.find(clientId);
+  } else if (!client.cpf) {
+    // Backfills CPF for clients who booked before this field existed, so
+    // their self-service lookup (phone + last 4 CPF digits) works going forward.
+    Client.update(client.id, { name: client.name, phone: client.phone, cpf, email: client.email, birth_date: client.birth_date, notes: client.notes });
+    client = Client.find(client.id);
   }
 
   // Shop has no secretary/receptionist to manually confirm every booking, so

@@ -1,0 +1,62 @@
+<%- include('../partials/site-head') %>
+<%- include('../partials/site-nav') %>
+<%- include('../partials/flash') %>
+
+<section class="booking-section d-flex align-items-center" style="min-height:70vh;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <% if (!appointment) { %>
+          <div class="booking-card text-center text-secondary">
+            <i class="fa-regular fa-face-frown fa-2x mb-3 d-block gold-text"></i>
+            Link invalido ou agendamento nao encontrado.
+          </div>
+        <% } else { %>
+          <div class="text-center mb-4">
+            <p class="eyebrow gold-text">Gerenciar agendamento</p>
+            <h1 class="section-title">Seu horario</h1>
+          </div>
+
+          <div class="my-appt-card mb-4">
+            <div class="my-appt-top">
+              <span><i class="fa-regular fa-calendar me-1"></i><%= appointment.date.split('-').reverse().join('/') %></span>
+              <span><i class="fa-regular fa-clock me-1"></i><%= appointment.time %></span>
+              <span class="status-badge status-<%= appointment.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[appointment.status] %></span>
+            </div>
+            <div class="my-appt-meta">
+              <span><i class="fa-solid fa-scissors me-1"></i><%= appointment.service_name %></span>
+              <span><i class="fa-solid fa-user-tie me-1"></i><%= appointment.barber_name %></span>
+              <span class="gold-text fw-semibold">R$ <%= appointment.price.toFixed(2).replace('.', ',') %></span>
+            </div>
+          </div>
+
+          <% if (canManage) { %>
+            <div class="d-flex gap-2 flex-wrap justify-content-center">
+              <form action="/meu-agendamento/<%= appointment.access_token %>/remarcar" method="POST"
+                    onsubmit="return confirm('Isso vai liberar seu horario atual. Voce escolhe um novo em seguida. Continuar?');">
+                <button type="submit" class="btn btn-outline-light"><i class="fa-solid fa-clock-rotate-left me-1"></i>Remarcar</button>
+              </form>
+              <form action="/meu-agendamento/<%= appointment.access_token %>/cancelar" method="POST"
+                    onsubmit="return confirm('Cancelar este agendamento?');">
+                <button type="submit" class="btn btn-outline-light text-danger"><i class="fa-solid fa-ban me-1"></i>Cancelar</button>
+              </form>
+            </div>
+          <% } else if (['pending', 'confirmed'].includes(appointment.status)) { %>
+            <p class="text-center text-secondary small">
+              <i class="fa-solid fa-circle-info gold-text me-1"></i>
+              Cancelamentos e remarcacoes so podem ser feitos ate 2 horas antes do horario.
+              Fale com a gente pelo
+              <a href="<%= settings.whatsapp ? 'https://wa.me/' + settings.whatsapp : '#' %>" target="_blank" class="link-gold">WhatsApp</a>.
+            </p>
+          <% } %>
+
+          <p class="text-center mt-4">
+            <a href="/" class="btn btn-gold px-4">Voltar ao inicio</a>
+          </p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/site-footer') %>

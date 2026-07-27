@@ -4,14 +4,22 @@
   <div class="col-lg-4">
     <div class="panel text-center">
       <div class="barber-photo mx-auto mb-3"><i class="fa-solid fa-user"></i></div>
-      <h5 class="mb-1"><%= client.name %></h5>
-      <p class="text-secondary small mb-3"><%= client.phone %><% if (client.email) { %> &bull; <%= client.email %><% } %></p>
+      <h5 class="mb-1"><%= record.name %></h5>
+      <p class="text-secondary small mb-3"><%= record.phone %><% if (record.email) { %> &bull; <%= record.email %><% } %></p>
+      <% if (record.blacklisted) { %>
+        <p class="mb-3"><span class="status-badge status-cancelled"><i class="fa-solid fa-ban me-1"></i>Bloqueado (nao compareceu)</span></p>
+      <% } %>
       <div class="d-flex justify-content-around mb-3">
-        <div><h4 class="gold-text mb-0"><%= client.visits_count %></h4><small class="text-secondary">Visitas</small></div>
-        <div><h6 class="mb-0"><%= client.last_visit || '-' %></h6><small class="text-secondary">Ultimo atendimento</small></div>
+        <div><h4 class="gold-text mb-0"><%= record.visits_count %></h4><small class="text-secondary">Visitas</small></div>
+        <div><h6 class="mb-0"><%= record.last_visit || '-' %></h6><small class="text-secondary">Ultimo atendimento</small></div>
       </div>
-      <% if (client.notes) { %><p class="small text-secondary text-start"><strong>Obs:</strong> <%= client.notes %></p><% } %>
-      <a href="/admin/clients/<%= client.id %>/edit" class="btn btn-gold btn-sm w-100 mt-2">Editar cadastro</a>
+      <% if (record.notes) { %><p class="small text-secondary text-start"><strong>Obs:</strong> <%= record.notes %></p><% } %>
+      <a href="/admin/clients/<%= record.id %>/edit" class="btn btn-gold btn-sm w-100 mt-2">Editar cadastro</a>
+      <% if (record.blacklisted) { %>
+        <form action="/admin/clients/<%= record.id %>/unblacklist" method="POST" class="mt-2">
+          <button type="submit" class="btn btn-outline-light btn-sm w-100"><i class="fa-solid fa-lock-open me-1"></i>Liberar para agendar online</button>
+        </form>
+      <% } %>
     </div>
   </div>
   <div class="col-lg-8">
@@ -28,7 +36,7 @@
                 <td><%= h.service_name %></td>
                 <td><%= h.barber_name %></td>
                 <td>R$ <%= h.price.toFixed(2).replace('.', ',') %></td>
-                <td><span class="status-badge status-<%= h.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado'})[h.status] %></span></td>
+                <td><span class="status-badge status-<%= h.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[h.status] %></span></td>
               </tr>
             <% }) %>
             <% if (history.length === 0) { %>

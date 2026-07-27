@@ -1,7 +1,8 @@
+const crypto = require('crypto');
 const { db } = require('../database/database');
 
 const BASE_SELECT = `
-  SELECT a.*, c.name AS client_name, c.phone AS client_phone,
+  SELECT a.*, c.name AS client_name, c.phone AS client_phone, c.cpf AS client_cpf,
          b.name AS barber_name, b.photo AS barber_photo, s.name AS service_name, s.duration_minutes
   FROM appointments a
   JOIN clients c ON c.id = a.client_id
@@ -11,6 +12,11 @@ const BASE_SELECT = `
 
 function find(id) {
   return db.prepare(`${BASE_SELECT} WHERE a.id = ?`).get(id);
+}
+
+function findByToken(token) {
+  if (!token) return null;
+  return db.prepare(`${BASE_SELECT} WHERE a.access_token = ?`).get(token);
 }
 
 function list({ range, barberId, status, search, page = 1, perPage = 20, dateFrom, dateTo } = {}) {
@@ -67,9 +73,9 @@ function bookedTimesForBarberDate(barberId, date) {
 
 function create(data) {
   const info = db.prepare(`
-    INSERT INTO appointments (client_id, barber_id, service_id, date, time, status, notes, price)
-    VALUES (@client_id, @barber_id, @service_id, @date, @time, @status, @notes, @price)
-  `).run({ status: 'pending', notes: null, ...data });
+    INSERT INTO appointments (client_id, barber_id, service_id, date, time, status, notes, price, access_token)
+    VALUES (@client_id, @barber_id, @service_id, @date, @time, @status, @notes, @price, @access_token)
+  `).run({ status: 'pending', notes: null, access_token: crypto.randomBytes(20).toString('hex'), ...data });
   return info.lastInsertRowid;
 }
 
@@ -143,7 +149,7 @@ function averageTicket(start, end) {
 }
 
 module.exports = {
-  find, list, bookedTimesForBarberDate, create, update, updateStatus, remove,
+  find, findByToken, list, bookedTimesForBarberDate, create, update, updateStatus, remove,
   countByDate, countBetween, revenueByDate, revenueBetween, upcoming,
   revenueSeries, appointmentsByMonthSeries, averageTicket,
 };

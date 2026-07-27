@@ -47,6 +47,7 @@ router.get('/clients/:id', clientController.show);
 router.get('/clients/:id/edit', clientController.editForm);
 router.post('/clients/:id', clientController.update);
 router.post('/clients/:id/delete', clientController.remove);
+router.post('/clients/:id/unblacklist', clientController.unblacklistClient);
 
 // Barbers
 router.get('/barbers', barberController.list);

@@ -233,4 +233,18 @@
   });
 
   showStep(sequence[0]);
+
+  // Coming from "Meus Agendamentos > Remarcar": the old appointment was
+  // already cancelled server-side, and the link carries the service (and
+  // barber, for future multi-barber shops) so the client doesn't have to
+  // pick the same service again -- just jump them straight past step 1.
+  const preselect = new URLSearchParams(window.location.search);
+  const preServiceId = preselect.get('service_id');
+  if (preServiceId) {
+    const serviceCard = document.querySelector(`[data-select="service"][data-id="${preServiceId}"]`);
+    if (serviceCard) {
+      serviceCard.click();
+      btnNext.click();
+    }
+  }
 })();

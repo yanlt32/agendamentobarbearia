@@ -90,15 +90,20 @@
             <h5 class="mb-3">Seus dados</h5>
             <div class="mb-3">
               <label class="form-label">Nome completo *</label>
-              <input type="text" name="name" class="form-control" required>
+              <input type="text" name="name" class="form-control" required value="<%= prefillClient ? prefillClient.name : '' %>">
             </div>
             <div class="mb-3">
               <label class="form-label">Telefone (WhatsApp) *</label>
-              <input type="text" name="phone" id="phone_input" class="form-control" placeholder="(00) 00000-0000" required>
+              <input type="text" name="phone" id="phone_input" class="form-control" placeholder="(00) 00000-0000" required value="<%= prefillClient ? prefillClient.phone : '' %>">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">CPF *</label>
+              <input type="text" name="cpf" id="cpf_input" class="form-control" placeholder="000.000.000-00" required value="<%= prefillClient ? (prefillClient.cpf || '') : '' %>">
+              <small class="text-secondary">Pedimos seu CPF apenas para registrar o agendamento, facilitando para voce ver, remarcar ou cancelar depois.</small>
             </div>
             <div class="mb-3">
               <label class="form-label">Email (opcional)</label>
-              <input type="email" name="email" class="form-control">
+              <input type="email" name="email" class="form-control" value="<%= prefillClient ? (prefillClient.email || '') : '' %>">
             </div>
             <div class="mb-3">
               <label class="form-label">Observacoes</label>

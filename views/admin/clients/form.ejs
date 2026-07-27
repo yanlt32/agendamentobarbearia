@@ -1,27 +1,32 @@
 <%- include('../../partials/admin-head') %>
 
 <div class="panel" style="max-width:600px;">
-  <form action="<%= client ? '/admin/clients/' + client.id : '/admin/clients' %>" method="POST">
+  <form action="<%= record ? '/admin/clients/' + record.id : '/admin/clients' %>" method="POST">
     <div class="row g-3">
       <div class="col-12">
         <label class="form-label">Nome *</label>
-        <input type="text" name="name" class="form-control" required value="<%= client ? client.name : '' %>">
+        <input type="text" name="name" class="form-control" required value="<%= record ? record.name : '' %>">
       </div>
       <div class="col-md-6">
         <label class="form-label">Telefone *</label>
-        <input type="text" name="phone" class="form-control phone-mask" required value="<%= client ? client.phone : '' %>">
+        <input type="text" name="phone" class="form-control phone-mask" required value="<%= record ? record.phone : '' %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">CPF</label>
+        <input type="text" name="cpf" class="form-control cpf-mask" placeholder="000.000.000-00" value="<%= record ? (record.cpf || '') : '' %>">
+        <small class="text-secondary">Usado pelo cliente pra acessar "Meus Agendamentos" no site.</small>
       </div>
       <div class="col-md-6">
         <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-control" value="<%= client ? (client.email || '') : '' %>">
+        <input type="email" name="email" class="form-control" value="<%= record ? (record.email || '') : '' %>">
       </div>
       <div class="col-md-6">
         <label class="form-label">Data de nascimento</label>
-        <input type="date" name="birth_date" class="form-control" value="<%= client ? (client.birth_date || '') : '' %>">
+        <input type="date" name="birth_date" class="form-control" value="<%= record ? (record.birth_date || '') : '' %>">
       </div>
       <div class="col-12">
         <label class="form-label">Observacoes</label>
-        <textarea name="notes" class="form-control" rows="3"><%= client ? (client.notes || '') : '' %></textarea>
+        <textarea name="notes" class="form-control" rows="3"><%= record ? (record.notes || '') : '' %></textarea>
       </div>
     </div>
     <div class="d-flex gap-2 mt-4">

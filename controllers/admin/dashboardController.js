@@ -42,6 +42,7 @@ function today(req, res) {
     title: 'Agendamentos de hoje',
     rows,
     todayFormatted: dayjs().format('DD/MM/YYYY'),
+    baseUrl: `${req.protocol}://${req.get('host')}`,
   });
 }
 

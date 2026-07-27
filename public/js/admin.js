@@ -38,6 +38,18 @@
     input.addEventListener('input', function () { input.value = maskPhone(input.value); });
   });
 
+  // CPF mask
+  function maskCpf(value) {
+    let v = value.replace(/\D/g, '').slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    return v;
+  }
+  document.querySelectorAll('input[name="cpf"], .cpf-mask').forEach(function (input) {
+    input.addEventListener('input', function () { input.value = maskCpf(input.value); });
+  });
+
   // Dropdowns inside .table-responsive get visually clipped by the
   // container's scroll box. Forcing Popper's "fixed" positioning strategy
   // renders the menu relative to the viewport instead, escaping the clip.
