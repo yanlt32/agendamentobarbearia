@@ -30,6 +30,7 @@
           <input type="hidden" name="service_id" id="service_id" required>
           <input type="hidden" name="barber_id" id="barber_id" value="<%= singleBarber ? singleBarber.id : '' %>" required>
           <input type="hidden" name="time" id="time_input" required>
+          <input type="hidden" name="reschedule_of" value="<%= rescheduleOf || '' %>">
 
           <!-- STEP 1: SERVICO -->
           <div class="booking-pane" data-pane="1">
@@ -88,6 +89,10 @@
           <!-- STEP 5: DADOS -->
           <div class="booking-pane d-none" data-pane="5">
             <h5 class="mb-3">Seus dados</h5>
+            <div class="alert alert-warning py-2 px-3 small mb-3" style="background:rgba(234,179,8,0.12); border:1px solid rgba(234,179,8,0.3); color:#eab308;">
+              <i class="fa-solid fa-triangle-exclamation me-1"></i>
+              Digite seu nome completo e telefone corretamente -- sao eles que voce vai usar depois em "Meus Agendamentos" para ver, remarcar ou cancelar.
+            </div>
             <div class="mb-3">
               <label class="form-label">Nome completo *</label>
               <input type="text" name="name" class="form-control" required value="<%= prefillClient ? prefillClient.name : '' %>">
@@ -95,11 +100,6 @@
             <div class="mb-3">
               <label class="form-label">Telefone (WhatsApp) *</label>
               <input type="text" name="phone" id="phone_input" class="form-control" placeholder="(00) 00000-0000" required value="<%= prefillClient ? prefillClient.phone : '' %>">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">CPF *</label>
-              <input type="text" name="cpf" id="cpf_input" class="form-control" placeholder="000.000.000-00" required value="<%= prefillClient ? (prefillClient.cpf || '') : '' %>">
-              <small class="text-secondary">Pedimos seu CPF apenas para registrar o agendamento, facilitando para voce ver, remarcar ou cancelar depois.</small>
             </div>
             <div class="mb-3">
               <label class="form-label">Email (opcional)</label>

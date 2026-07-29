@@ -2,9 +2,9 @@ const Client = require('../../models/Client');
 const Log = require('../../models/Log');
 
 function list(req, res) {
-  const { search, page } = req.query;
-  const result = Client.list({ search, page: Number(page) || 1 });
-  res.render('admin/clients/list', { title: 'Clientes', ...result, filters: { search } });
+  const { search, blacklisted, page } = req.query;
+  const result = Client.list({ search, blacklistedOnly: blacklisted === '1', page: Number(page) || 1 });
+  res.render('admin/clients/list', { title: 'Clientes', ...result, filters: { search, blacklisted } });
 }
 
 function newForm(req, res) {
@@ -60,7 +60,7 @@ function unblacklistClient(req, res) {
   Client.unblacklist(req.params.id);
   Log.record(req.session.user.id, 'client_unblacklist', `Cliente #${req.params.id} liberado para agendar online.`);
   req.flash('success', 'Cliente liberado para agendar online novamente.');
-  res.redirect(`/admin/clients/${req.params.id}`);
+  res.redirect(req.get('referer') || `/admin/clients/${req.params.id}`);
 }
 
 module.exports = { list, newForm, create, editForm, update, remove, show, unblacklistClient };

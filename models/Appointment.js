@@ -67,7 +67,7 @@ function bookedTimesForBarberDate(barberId, date) {
   return db.prepare(`
     SELECT time, s.duration_minutes FROM appointments a
     JOIN services s ON s.id = a.service_id
-    WHERE a.barber_id = ? AND a.date = ? AND a.status != 'cancelled'
+    WHERE a.barber_id = ? AND a.date = ? AND a.status NOT IN ('cancelled', 'rescheduled')
   `).all(barberId, date);
 }
 
@@ -98,11 +98,11 @@ function remove(id) {
 // --- Dashboard / financial aggregates ---
 
 function countByDate(date) {
-  return db.prepare("SELECT COUNT(*) AS c FROM appointments WHERE date = ? AND status != 'cancelled'").get(date).c;
+  return db.prepare("SELECT COUNT(*) AS c FROM appointments WHERE date = ? AND status NOT IN ('cancelled', 'rescheduled')").get(date).c;
 }
 
 function countBetween(start, end) {
-  return db.prepare("SELECT COUNT(*) AS c FROM appointments WHERE date BETWEEN ? AND ? AND status != 'cancelled'").get(start, end).c;
+  return db.prepare("SELECT COUNT(*) AS c FROM appointments WHERE date BETWEEN ? AND ? AND status NOT IN ('cancelled', 'rescheduled')").get(start, end).c;
 }
 
 function revenueByDate(date) {
@@ -135,7 +135,7 @@ function revenueSeries(start, end) {
 function appointmentsByMonthSeries(months) {
   return db.prepare(`
     SELECT strftime('%Y-%m', date) AS ym, COUNT(*) AS total
-    FROM appointments WHERE status != 'cancelled' AND date >= ?
+    FROM appointments WHERE status NOT IN ('cancelled', 'rescheduled') AND date >= ?
     GROUP BY ym ORDER BY ym ASC
   `).all(months);
 }

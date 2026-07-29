@@ -12,13 +12,15 @@ const realtime = require('../utils/realtime');
 function showBooking(req, res) {
   const barbers = Barber.all({ onlyActive: true });
 
-  // Coming from "Remarcar": the old appointment's own access_token (still
-  // valid even after it was cancelled) proves this request already went
-  // through identity verification, so the client shouldn't have to retype
-  // name/phone/CPF/email for the new booking.
+  // Coming from "Remarcar": the old appointment's own access_token proves
+  // this request already went through identity verification, so the client
+  // shouldn't have to retype name/phone/email for the new booking. The old
+  // appointment itself is untouched until the new one is actually confirmed
+  // (see createBooking) -- so abandoning this flow doesn't lose it.
   let prefillClient = null;
-  if (req.query.prefill) {
-    const oldAppointment = Appointment.findByToken(req.query.prefill);
+  const rescheduleOf = req.query.reschedule_of || '';
+  if (rescheduleOf) {
+    const oldAppointment = Appointment.findByToken(rescheduleOf);
     if (oldAppointment) prefillClient = Client.find(oldAppointment.client_id);
   }
 
@@ -30,6 +32,7 @@ function showBooking(req, res) {
     minDate: dayjs().format('YYYY-MM-DD'),
     maxDate: dayjs().add(60, 'day').format('YYYY-MM-DD'),
     prefillClient,
+    rescheduleOf,
   });
 }
 
@@ -60,9 +63,9 @@ function availableTimes(req, res) {
 }
 
 async function createBooking(req, res) {
-  const { service_id, barber_id, date, time, name, phone, cpf, email, notes } = req.body;
+  const { service_id, barber_id, date, time, name, phone, email, notes, reschedule_of } = req.body;
 
-  if (!service_id || !barber_id || !date || !time || !name || !phone || !cpf) {
+  if (!service_id || !barber_id || !date || !time || !name || !phone) {
     req.flash('error', 'Preencha todos os campos obrigatorios.');
     return res.redirect('/agendar');
   }
@@ -70,12 +73,6 @@ async function createBooking(req, res) {
   const phoneDigits = String(phone).replace(/\D/g, '');
   if (phoneDigits.length < 10 || phoneDigits.length > 11) {
     req.flash('error', 'Informe um numero de WhatsApp valido, com DDD.');
-    return res.redirect('/agendar');
-  }
-
-  const cpfDigits = String(cpf).replace(/\D/g, '');
-  if (cpfDigits.length !== 11) {
-    req.flash('error', 'Informe um CPF valido, com 11 numeros.');
     return res.redirect('/agendar');
   }
 
@@ -106,13 +103,8 @@ async function createBooking(req, res) {
   }
 
   if (!client) {
-    const clientId = Client.create({ name, phone, cpf, email: email || null });
+    const clientId = Client.create({ name, phone, email: email || null });
     client = Client.find(clientId);
-  } else if (!client.cpf) {
-    // Backfills CPF for clients who booked before this field existed, so
-    // their self-service lookup (phone + last 4 CPF digits) works going forward.
-    Client.update(client.id, { name: client.name, phone: client.phone, cpf, email: client.email, birth_date: client.birth_date, notes: client.notes });
-    client = Client.find(client.id);
   }
 
   // Shop has no secretary/receptionist to manually confirm every booking, so
@@ -127,6 +119,18 @@ async function createBooking(req, res) {
     notes: notes || null,
     price: service.price,
   });
+
+  // Coming from "Remarcar": only now, with the new time actually booked, does
+  // the old appointment get marked 'rescheduled' (distinct from a plain
+  // 'cancelled' in the admin panel) and freed up on the calendar. The token
+  // itself is the proof of ownership -- no need to re-check phone/name here.
+  if (reschedule_of) {
+    const oldAppointment = Appointment.findByToken(reschedule_of);
+    if (oldAppointment && ['pending', 'confirmed'].includes(oldAppointment.status)) {
+      Appointment.updateStatus(oldAppointment.id, 'rescheduled');
+      realtime.broadcast('status', { id: oldAppointment.id, status: 'rescheduled' });
+    }
+  }
 
   const appointment = Appointment.find(appointmentId);
   notifications.notifyNewAppointment(appointment).catch(() => {});

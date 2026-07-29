@@ -8,6 +8,11 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
   <link href="/css/admin.css" rel="stylesheet">
+  <!-- Loaded here (not at the bottom of admin-footer.ejs) so it's always
+       available before any page-specific script -- dashboard.js/financial.js
+       reference the Chart global as soon as their <script> tag runs, and
+       those tags sit earlier in the page than admin-footer.ejs's scripts. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="admin-wrapper">
@@ -43,8 +48,8 @@
       <h5 class="mb-0 flex-grow-1"><%= title %></h5>
       <button class="btn-icon" id="btnThemeToggle" title="Alternar tema"><i class="fa-solid fa-circle-half-stroke"></i></button>
       <div class="dropdown">
-        <button class="btn-icon dropdown-toggle" data-bs-toggle="dropdown">
-          <i class="fa-solid fa-circle-user"></i> <%= currentUser ? currentUser.name : '' %>
+        <button class="btn-icon user-menu-btn dropdown-toggle" data-bs-toggle="dropdown">
+          <i class="fa-solid fa-circle-user"></i> <span class="user-menu-name"><%= currentUser ? currentUser.name : '' %></span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><form action="/admin/logout" method="POST"><button type="submit" class="dropdown-item"><i class="fa-solid fa-right-from-bracket me-2"></i>Sair</button></form></li>

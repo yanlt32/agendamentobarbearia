@@ -30,6 +30,7 @@
         <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Finalizado</option>
         <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelado</option>
         <option value="no_show" <%= filters.status === 'no_show' ? 'selected' : '' %>>Nao compareceu</option>
+        <option value="rescheduled" <%= filters.status === 'rescheduled' ? 'selected' : '' %>>Remarcado</option>
       </select>
     </div>
     <div class="col-6 col-md-3">
@@ -66,14 +67,14 @@
       <tbody>
         <% rows.forEach(function(a) { %>
           <tr>
-            <td><input type="checkbox" class="form-check-input row-select" value="<%= a.id %>" <%= ['completed', 'cancelled', 'no_show'].includes(a.status) ? 'disabled' : '' %>></td>
+            <td><input type="checkbox" class="form-check-input row-select" value="<%= a.id %>" <%= ['completed', 'cancelled', 'no_show', 'rescheduled'].includes(a.status) ? 'disabled' : '' %>></td>
             <td><%= a.date %></td>
             <td><%= a.time %></td>
             <td><%= a.client_name %><br><small class="text-secondary"><%= a.client_phone %></small></td>
             <td><%= a.barber_name %></td>
             <td><%= a.service_name %></td>
             <td>R$ <%= a.price.toFixed(2).replace('.', ',') %></td>
-            <td><span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[a.status] %></span></td>
+            <td><span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu',rescheduled:'Remarcado'})[a.status] %></span></td>
             <td class="text-end">
               <div class="dropdown">
                 <button class="btn-icon" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -124,13 +125,13 @@
       <div class="appt-card">
         <div class="appt-card-top">
           <div class="d-flex align-items-center gap-2">
-            <input type="checkbox" class="form-check-input row-select mt-0" value="<%= a.id %>" <%= ['completed', 'cancelled', 'no_show'].includes(a.status) ? 'disabled' : '' %>>
+            <input type="checkbox" class="form-check-input row-select mt-0" value="<%= a.id %>" <%= ['completed', 'cancelled', 'no_show', 'rescheduled'].includes(a.status) ? 'disabled' : '' %>>
             <div>
               <span class="appt-card-date"><i class="fa-regular fa-calendar me-1"></i><%= a.date %></span>
               <span class="appt-card-time"><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
             </div>
           </div>
-          <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[a.status] %></span>
+          <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu',rescheduled:'Remarcado'})[a.status] %></span>
         </div>
         <div class="appt-card-client">
           <strong><%= a.client_name %></strong>

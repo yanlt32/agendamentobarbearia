@@ -1,15 +1,19 @@
 const { db } = require('../database/database');
 
-function list({ search = '', page = 1, perPage = 15 } = {}) {
+function list({ search = '', blacklistedOnly = false, page = 1, perPage = 15 } = {}) {
   const offset = (page - 1) * perPage;
-  let where = '';
+  const where = [];
   const params = [];
   if (search) {
-    where = 'WHERE name LIKE ? OR phone LIKE ? OR email LIKE ?';
+    where.push('(name LIKE ? OR phone LIKE ? OR email LIKE ?)');
     params.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
-  const total = db.prepare(`SELECT COUNT(*) AS c FROM clients ${where}`).get(...params).c;
-  const rows = db.prepare(`SELECT * FROM clients ${where} ORDER BY name ASC LIMIT ? OFFSET ?`)
+  if (blacklistedOnly) {
+    where.push('blacklisted = 1');
+  }
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const total = db.prepare(`SELECT COUNT(*) AS c FROM clients ${whereSql}`).get(...params).c;
+  const rows = db.prepare(`SELECT * FROM clients ${whereSql} ORDER BY name ASC LIMIT ? OFFSET ?`)
     .all(...params, perPage, offset);
   return { rows, total, page, perPage, totalPages: Math.max(1, Math.ceil(total / perPage)) };
 }

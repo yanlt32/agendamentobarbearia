@@ -21,6 +21,7 @@
   --text-muted: #666;
 }
 
+html, body { overflow-x: hidden; max-width: 100%; }
 body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); }
 
 .gold-text { color: var(--gold) !important; }
@@ -83,7 +84,26 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 }
 .btn-icon:hover { background: rgba(212,175,55,0.12); color: var(--gold); }
 
+/* User menu toggle reuses .btn-icon's colors/hover but has a name next to
+   the icon, so it can't be squeezed into the 36x36 icon-only box. */
+.user-menu-btn { width: auto; padding: 0 .7rem; gap: .5rem; white-space: nowrap; }
+@media (max-width: 575px) {
+  .user-menu-btn .user-menu-name { display: none; }
+  .user-menu-btn { padding: 0; width: 36px; }
+}
+
 .admin-content { padding: 1.5rem; flex: 1; }
+
+/* Barber/client photo placeholder. Missing here entirely was letting the
+   <img> render at its natural upload resolution (often 1000px+) with
+   nothing to scale it down, blowing out the whole page width on mobile. */
+.barber-photo {
+  width: 100%; max-width: 200px; aspect-ratio: 1 / 1; margin: 0 auto;
+  border-radius: 14px; overflow: hidden; background: var(--panel-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem; color: var(--text-muted); border: 1px solid var(--border);
+}
+.barber-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .panel {
   background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.3rem;
@@ -94,6 +114,7 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
   background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem;
   display:flex; align-items:center; gap: 1rem; height: 100%;
 }
+.stat-card > div:last-child { min-width: 0; }
 .stat-icon {
   width: 52px; height: 52px; border-radius: 12px; display:flex; align-items:center; justify-content:center;
   font-size: 1.3rem; color: #fff; flex-shrink: 0;
@@ -116,6 +137,7 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 .status-completed { background: rgba(34,197,94,0.15); color: #22c55e; }
 .status-cancelled { background: rgba(239,68,68,0.15); color: #ef4444; }
 .status-no_show { background: rgba(148,163,184,0.15); color: #94a3b8; }
+.status-rescheduled { background: rgba(6,182,212,0.15); color: #06b6d4; }
 
 /* APPOINTMENT CARDS (mobile) */
 .appt-card {

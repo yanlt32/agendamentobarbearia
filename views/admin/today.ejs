@@ -32,7 +32,7 @@
                 <%= a.barber_name %>
               </div>
             </td>
-            <td><span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[a.status] %></span></td>
+            <td><span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu',rescheduled:'Remarcado'})[a.status] %></span></td>
             <td class="text-end">
               <% if (a.status === 'pending' || a.status === 'confirmed') { %>
                 <a href="https://wa.me/55<%= a.client_phone.replace(/\D/g,'') %>?text=<%= encodeURIComponent(msg) %>" target="_blank" class="btn btn-gold btn-sm">
@@ -59,7 +59,7 @@
       <div class="appt-card">
         <div class="appt-card-top">
           <span class="appt-card-time"><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
-          <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[a.status] %></span>
+          <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu',rescheduled:'Remarcado'})[a.status] %></span>
         </div>
         <div class="appt-card-client">
           <strong><%= a.client_name %></strong>

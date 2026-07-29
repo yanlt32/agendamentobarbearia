@@ -12,6 +12,14 @@
     <div class="col-2 col-md-2">
       <a href="/admin/clients/new" class="btn btn-outline-light btn-sm w-100"><i class="fa-solid fa-plus me-1"></i>Novo</a>
     </div>
+    <div class="col-12">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="blacklisted" value="1" id="onlyBlacklisted" <%= filters.blacklisted === '1' ? 'checked' : '' %> onchange="this.form.submit()">
+        <label class="form-check-label small" for="onlyBlacklisted">
+          <i class="fa-solid fa-ban text-danger me-1"></i>Mostrar so bloqueados (nao compareceram)
+        </label>
+      </div>
+    </div>
   </form>
 </div>
 
@@ -22,12 +30,22 @@
       <tbody>
         <% rows.forEach(function(c) { %>
           <tr>
-            <td><a href="/admin/clients/<%= c.id %>" class="link-gold"><%= c.name %></a></td>
+            <td>
+              <a href="/admin/clients/<%= c.id %>" class="link-gold"><%= c.name %></a>
+              <% if (c.blacklisted) { %>
+                <span class="status-badge status-cancelled ms-1"><i class="fa-solid fa-ban me-1"></i>Bloqueado</span>
+              <% } %>
+            </td>
             <td><%= c.phone %></td>
             <td><%= c.email || '-' %></td>
             <td><%= c.visits_count %></td>
             <td><%= c.last_visit || '-' %></td>
             <td class="text-end">
+              <% if (c.blacklisted) { %>
+                <form action="/admin/clients/<%= c.id %>/unblacklist" method="POST" class="d-inline confirm-form" data-confirm="Liberar este cliente para agendar online de novo?">
+                  <button type="submit" class="btn-icon" title="Liberar para agendar online"><i class="fa-solid fa-lock-open"></i></button>
+                </form>
+              <% } %>
               <a href="/admin/clients/<%= c.id %>/edit" class="btn-icon" title="Editar"><i class="fa-solid fa-pen"></i></a>
               <form action="/admin/clients/<%= c.id %>/delete" method="POST" class="d-inline confirm-form" data-confirm="Excluir este cliente?">
                 <button type="submit" class="btn-icon text-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
@@ -45,7 +63,7 @@
     <nav class="mt-3">
       <ul class="pagination pagination-sm justify-content-center">
         <% for (let p = 1; p <= totalPages; p++) { %>
-          <li class="page-item <%= p === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= p %>&search=<%= filters.search || '' %>"><%= p %></a></li>
+          <li class="page-item <%= p === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= p %>&search=<%= filters.search || '' %>&blacklisted=<%= filters.blacklisted || '' %>"><%= p %></a></li>
         <% } %>
       </ul>
     </nav>

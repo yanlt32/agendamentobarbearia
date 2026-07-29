@@ -36,7 +36,7 @@
                 <td><%= h.service_name %></td>
                 <td><%= h.barber_name %></td>
                 <td>R$ <%= h.price.toFixed(2).replace('.', ',') %></td>
-                <td><span class="status-badge status-<%= h.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu'})[h.status] %></span></td>
+                <td><span class="status-badge status-<%= h.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu',rescheduled:'Remarcado'})[h.status] %></span></td>
               </tr>
             <% }) %>
             <% if (history.length === 0) { %>
