@@ -4,7 +4,11 @@ const Log = require('../../models/Log');
 function list(req, res) {
   const { search, blacklisted, page } = req.query;
   const result = Client.list({ search, blacklistedOnly: blacklisted === '1', page: Number(page) || 1 });
-  res.render('admin/clients/list', { title: 'Clientes', ...result, filters: { search, blacklisted } });
+  res.render('admin/clients/list', {
+    title: blacklisted === '1' ? 'Clientes Bloqueados' : 'Clientes',
+    ...result,
+    filters: { search, blacklisted },
+  });
 }
 
 function newForm(req, res) {
