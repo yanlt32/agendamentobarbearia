@@ -460,6 +460,43 @@ function applyShopPhoneUpdateOnce() {
   db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_shop_phone_v1', 'done');
 }
 
+// One-time sync: Admin > Horarios de Funcionamento edits working_hours, but
+// actual booking availability only ever checked barber_schedules -- the two
+// were never connected, so changes there (e.g. opening Sunday) silently had
+// zero effect on what clients could book. hoursController.updateHours() now
+// keeps them in sync going forward; this brings whatever is already saved
+// in working_hours into barber_schedules once, for every barber, so the fix
+// applies without the admin needing to re-save the hours page.
+function syncWorkingHoursToBarberSchedulesOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_hours_sync_v1'").get();
+  if (marker) return;
+
+  const hours = db.prepare('SELECT * FROM working_hours').all();
+  const barberIds = db.prepare('SELECT id FROM barbers').all().map((b) => b.id);
+  const findStmt = db.prepare('SELECT id FROM barber_schedules WHERE barber_id = ? AND weekday = ?');
+  const updateStmt = db.prepare('UPDATE barber_schedules SET start_time = ?, end_time = ?, is_off = ? WHERE id = ?');
+  const insertStmt = db.prepare('INSERT INTO barber_schedules (barber_id, weekday, start_time, end_time, is_off) VALUES (?, ?, ?, ?, ?)');
+
+  const tx = db.transaction(() => {
+    hours.forEach((h) => {
+      const startTime = h.open_time || '08:00';
+      const endTime = h.close_time || '19:00';
+      const isOff = h.is_open ? 0 : 1;
+      barberIds.forEach((barberId) => {
+        const existing = findStmt.get(barberId, h.weekday);
+        if (existing) {
+          updateStmt.run(startTime, endTime, isOff, existing.id);
+        } else {
+          insertStmt.run(barberId, h.weekday, startTime, endTime, isOff);
+        }
+      });
+    });
+  });
+  tx();
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_hours_sync_v1', 'done');
+}
+
 createSchema();
 seed();
 reconcileServicesOnce();
@@ -471,5 +508,6 @@ ensureBlacklistColumn();
 ensureCpfColumn();
 applyShopInfoUpdateOnce();
 applyShopPhoneUpdateOnce();
+syncWorkingHoursToBarberSchedulesOnce();
 
 module.exports = { db, DB_PATH, BACKUP_DIR, backup };

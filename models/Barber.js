@@ -68,6 +68,21 @@ function scheduleForDay(barberId, weekday) {
   return db.prepare('SELECT * FROM barber_schedules WHERE barber_id = ? AND weekday = ?').get(barberId, weekday);
 }
 
+// Upserts one weekday's hours for one barber. Needed because a closed
+// weekday (e.g. domingo) may have no row at all yet -- a plain UPDATE would
+// silently do nothing, which is exactly the bug where turning Sunday "on"
+// in Admin > Horarios had no effect on actual booking availability.
+function upsertScheduleForWeekday(barberId, weekday, { start_time, end_time, is_off }) {
+  const existing = db.prepare('SELECT id FROM barber_schedules WHERE barber_id = ? AND weekday = ?').get(barberId, weekday);
+  if (existing) {
+    db.prepare('UPDATE barber_schedules SET start_time = ?, end_time = ?, is_off = ? WHERE id = ?')
+      .run(start_time, end_time, is_off ? 1 : 0, existing.id);
+  } else {
+    db.prepare('INSERT INTO barber_schedules (barber_id, weekday, start_time, end_time, is_off) VALUES (?, ?, ?, ?, ?)')
+      .run(barberId, weekday, start_time, end_time, is_off ? 1 : 0);
+  }
+}
+
 function topServices(limit = 5) {
   return db.prepare(`
     SELECT b.name, COUNT(a.id) as total
@@ -77,4 +92,7 @@ function topServices(limit = 5) {
   `).all(limit);
 }
 
-module.exports = { all, find, create, update, remove, getServices, setServices, getSchedule, setSchedule, scheduleForDay, topServices };
+module.exports = {
+  all, find, create, update, remove, getServices, setServices, getSchedule, setSchedule,
+  scheduleForDay, upsertScheduleForWeekday, topServices,
+};

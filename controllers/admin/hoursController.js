@@ -1,6 +1,7 @@
 const WorkingHour = require('../../models/WorkingHour');
 const Holiday = require('../../models/Holiday');
 const Setting = require('../../models/Setting');
+const Barber = require('../../models/Barber');
 const Log = require('../../models/Log');
 
 const WEEKDAYS = ['Domingo', 'Segunda-feira', 'Terca-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sabado'];
@@ -16,11 +17,29 @@ function index(req, res) {
 }
 
 function updateHours(req, res) {
+  const barberIds = Barber.all().map((b) => b.id);
+
   WEEKDAYS.forEach((_, wd) => {
+    const isOpen = !!req.body[`is_open_${wd}`];
+    const openTime = req.body[`open_${wd}`] || '08:00';
+    const closeTime = req.body[`close_${wd}`] || '19:00';
+
     WorkingHour.update(wd, {
-      is_open: req.body[`is_open_${wd}`] ? 1 : 0,
-      open_time: req.body[`open_${wd}`] || null,
-      close_time: req.body[`close_${wd}`] || null,
+      is_open: isOpen ? 1 : 0,
+      open_time: openTime,
+      close_time: closeTime,
+    });
+
+    // This page is the shop's single source of truth for hours, but actual
+    // booking availability is checked per-barber (barber_schedules) -- so
+    // without this, changing hours here (e.g. opening on Sunday) silently
+    // had zero effect on what clients could actually book.
+    barberIds.forEach((barberId) => {
+      Barber.upsertScheduleForWeekday(barberId, wd, {
+        start_time: openTime,
+        end_time: closeTime,
+        is_off: !isOpen,
+      });
     });
   });
   if (req.body.slot_interval_minutes) {
