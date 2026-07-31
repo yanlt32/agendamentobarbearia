@@ -175,9 +175,9 @@ function createSchema() {
 function seed() {
   const userCount = db.prepare('SELECT COUNT(*) AS c FROM users').get().c;
   if (userCount === 0) {
-    const hash = bcrypt.hashSync('admin123', 10);
+    const hash = bcrypt.hashSync('Barbearia01', 10);
     db.prepare('INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)')
-      .run('admin', hash, 'Administrador', 'admin');
+      .run('jackson', hash, 'Jackson', 'admin');
   }
 
   const whCount = db.prepare('SELECT COUNT(*) AS c FROM working_hours').get().c;
@@ -497,6 +497,22 @@ function syncWorkingHoursToBarberSchedulesOnce() {
   db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_hours_sync_v1', 'done');
 }
 
+// One-time credential change: the shop owner wants a real username/password
+// instead of the generic admin/admin123 sample the app shipped with (which
+// was also shown on the login page -- also removed now that this runs).
+// Guarded like the other migrations so it only ever renames the account once,
+// not on every boot (which would stomp a password the owner changes later).
+function applyAdminCredentialsUpdateOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_admin_credentials_v1'").get();
+  if (marker) return;
+
+  const hash = bcrypt.hashSync('Barbearia01', 10);
+  db.prepare("UPDATE users SET username = ?, password = ?, name = ? WHERE username = 'admin'")
+    .run('jackson', hash, 'Jackson');
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_admin_credentials_v1', 'done');
+}
+
 createSchema();
 seed();
 reconcileServicesOnce();
@@ -509,5 +525,6 @@ ensureCpfColumn();
 applyShopInfoUpdateOnce();
 applyShopPhoneUpdateOnce();
 syncWorkingHoursToBarberSchedulesOnce();
+applyAdminCredentialsUpdateOnce();
 
 module.exports = { db, DB_PATH, BACKUP_DIR, backup };
