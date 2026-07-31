@@ -54,12 +54,12 @@ function getSchedule(barberId) {
 function setSchedule(barberId, schedules) {
   const del = db.prepare('DELETE FROM barber_schedules WHERE barber_id = ?');
   const ins = db.prepare(`
-    INSERT INTO barber_schedules (barber_id, weekday, start_time, end_time, is_off)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO barber_schedules (barber_id, weekday, start_time, end_time, is_off, break_start, break_end)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   const tx = db.transaction((rows) => {
     del.run(barberId);
-    rows.forEach((r) => ins.run(barberId, r.weekday, r.start_time, r.end_time, r.is_off ? 1 : 0));
+    rows.forEach((r) => ins.run(barberId, r.weekday, r.start_time, r.end_time, r.is_off ? 1 : 0, r.break_start || null, r.break_end || null));
   });
   tx(schedules);
 }
@@ -72,14 +72,14 @@ function scheduleForDay(barberId, weekday) {
 // weekday (e.g. domingo) may have no row at all yet -- a plain UPDATE would
 // silently do nothing, which is exactly the bug where turning Sunday "on"
 // in Admin > Horarios had no effect on actual booking availability.
-function upsertScheduleForWeekday(barberId, weekday, { start_time, end_time, is_off }) {
+function upsertScheduleForWeekday(barberId, weekday, { start_time, end_time, is_off, break_start = null, break_end = null }) {
   const existing = db.prepare('SELECT id FROM barber_schedules WHERE barber_id = ? AND weekday = ?').get(barberId, weekday);
   if (existing) {
-    db.prepare('UPDATE barber_schedules SET start_time = ?, end_time = ?, is_off = ? WHERE id = ?')
-      .run(start_time, end_time, is_off ? 1 : 0, existing.id);
+    db.prepare('UPDATE barber_schedules SET start_time = ?, end_time = ?, is_off = ?, break_start = ?, break_end = ? WHERE id = ?')
+      .run(start_time, end_time, is_off ? 1 : 0, break_start, break_end, existing.id);
   } else {
-    db.prepare('INSERT INTO barber_schedules (barber_id, weekday, start_time, end_time, is_off) VALUES (?, ?, ?, ?, ?)')
-      .run(barberId, weekday, start_time, end_time, is_off ? 1 : 0);
+    db.prepare('INSERT INTO barber_schedules (barber_id, weekday, start_time, end_time, is_off, break_start, break_end) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .run(barberId, weekday, start_time, end_time, is_off ? 1 : 0, break_start, break_end);
   }
 }
 

@@ -35,13 +35,21 @@ function getAvailableSlots({ barberId, date, durationMinutes }) {
     return { start: s, end: s + (b.duration_minutes || interval) };
   });
 
+  // Lunch break (e.g. barber out from 12:00 to 14:00) blocks slots the same
+  // way an existing appointment would -- optional, only set when the
+  // barber's schedule for that weekday has one.
+  const blocked = [...booked];
+  if (schedule.break_start && schedule.break_end) {
+    blocked.push({ start: toMinutes(schedule.break_start), end: toMinutes(schedule.break_end) });
+  }
+
   const isToday = dayjs(date).isSame(dayjs(), 'day');
   const nowMin = dayjs().hour() * 60 + dayjs().minute();
 
   const slots = [];
   for (let t = startMin; t + durationMinutes <= endMin; t += interval) {
     if (isToday && t <= nowMin) continue;
-    const overlaps = booked.some((b) => t < b.end && (t + durationMinutes) > b.start);
+    const overlaps = blocked.some((b) => t < b.end && (t + durationMinutes) > b.start);
     slots.push({ time: toHHMM(t), available: !overlaps });
   }
   return slots;

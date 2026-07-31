@@ -106,7 +106,9 @@ function createSchema() {
       weekday INTEGER NOT NULL, -- 0=domingo ... 6=sabado
       start_time TEXT NOT NULL,
       end_time TEXT NOT NULL,
-      is_off INTEGER NOT NULL DEFAULT 0
+      is_off INTEGER NOT NULL DEFAULT 0,
+      break_start TEXT, -- optional lunch break window; NULL means no break that day
+      break_end TEXT
     );
 
     CREATE TABLE IF NOT EXISTS working_hours (
@@ -114,7 +116,9 @@ function createSchema() {
       weekday INTEGER NOT NULL UNIQUE, -- 0=domingo ... 6=sabado
       open_time TEXT,
       close_time TEXT,
-      is_open INTEGER NOT NULL DEFAULT 1
+      is_open INTEGER NOT NULL DEFAULT 1,
+      break_start TEXT, -- optional lunch break window; NULL means no break that day
+      break_end TEXT
     );
 
     CREATE TABLE IF NOT EXISTS holidays (
@@ -513,6 +517,45 @@ function applyAdminCredentialsUpdateOnce() {
   db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_admin_credentials_v1', 'done');
 }
 
+function ensureBreakColumns() {
+  const barberCols = db.prepare("PRAGMA table_info(barber_schedules)").all();
+  if (!barberCols.some((c) => c.name === 'break_start')) db.exec('ALTER TABLE barber_schedules ADD COLUMN break_start TEXT');
+  if (!barberCols.some((c) => c.name === 'break_end')) db.exec('ALTER TABLE barber_schedules ADD COLUMN break_end TEXT');
+
+  const hoursCols = db.prepare("PRAGMA table_info(working_hours)").all();
+  if (!hoursCols.some((c) => c.name === 'break_start')) db.exec('ALTER TABLE working_hours ADD COLUMN break_start TEXT');
+  if (!hoursCols.some((c) => c.name === 'break_end')) db.exec('ALTER TABLE working_hours ADD COLUMN break_end TEXT');
+}
+
+// One-time: Jackson needs a lunch break every working day (leaves at noon,
+// back at 14h). Sets it on every existing weekday row that isn't a day off,
+// in both working_hours (so Admin > Horarios shows it pre-filled) and
+// barber_schedules (what actually blocks bookings) -- so it applies
+// immediately without the admin needing to click through either form first.
+function applyLunchBreakOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_lunch_break_v1'").get();
+  if (marker) return;
+
+  db.prepare("UPDATE working_hours SET break_start = '12:00', break_end = '14:00' WHERE is_open = 1").run();
+  db.prepare("UPDATE barber_schedules SET break_start = '12:00', break_end = '14:00' WHERE is_off = 0").run();
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_lunch_break_v1', 'done');
+}
+
+// Separate, later migration: the working_hours.break_start/break_end columns
+// (and the Admin > Horarios fields for them) were added after
+// migration_lunch_break_v1 already ran and set its marker -- so that guard
+// blocks this backfill from happening there. Runs once on its own marker so
+// the new fields show 12:00-14:00 pre-filled instead of blank.
+function backfillWorkingHoursLunchBreakOnce() {
+  const marker = db.prepare("SELECT value FROM settings WHERE key = 'migration_working_hours_break_v1'").get();
+  if (marker) return;
+
+  db.prepare("UPDATE working_hours SET break_start = '12:00', break_end = '14:00' WHERE is_open = 1 AND break_start IS NULL").run();
+
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('migration_working_hours_break_v1', 'done');
+}
+
 createSchema();
 seed();
 reconcileServicesOnce();
@@ -524,7 +567,10 @@ ensureBlacklistColumn();
 ensureCpfColumn();
 applyShopInfoUpdateOnce();
 applyShopPhoneUpdateOnce();
+ensureBreakColumns();
+applyLunchBreakOnce();
 syncWorkingHoursToBarberSchedulesOnce();
 applyAdminCredentialsUpdateOnce();
+backfillWorkingHoursLunchBreakOnce();
 
 module.exports = { db, DB_PATH, BACKUP_DIR, backup };

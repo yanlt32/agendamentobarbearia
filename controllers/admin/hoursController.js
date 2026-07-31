@@ -23,22 +23,29 @@ function updateHours(req, res) {
     const isOpen = !!req.body[`is_open_${wd}`];
     const openTime = req.body[`open_${wd}`] || '08:00';
     const closeTime = req.body[`close_${wd}`] || '19:00';
+    // Optional lunch break -- blank fields mean no break that day.
+    const breakStart = req.body[`break_start_${wd}`] || null;
+    const breakEnd = req.body[`break_end_${wd}`] || null;
 
     WorkingHour.update(wd, {
       is_open: isOpen ? 1 : 0,
       open_time: openTime,
       close_time: closeTime,
+      break_start: breakStart,
+      break_end: breakEnd,
     });
 
     // This page is the shop's single source of truth for hours, but actual
     // booking availability is checked per-barber (barber_schedules) -- so
-    // without this, changing hours here (e.g. opening on Sunday) silently
-    // had zero effect on what clients could actually book.
+    // without this, changing hours here (e.g. opening on Sunday, or setting
+    // a lunch break) silently had zero effect on what clients could book.
     barberIds.forEach((barberId) => {
       Barber.upsertScheduleForWeekday(barberId, wd, {
         start_time: openTime,
         end_time: closeTime,
         is_off: !isOpen,
+        break_start: breakStart,
+        break_end: breakEnd,
       });
     });
   });

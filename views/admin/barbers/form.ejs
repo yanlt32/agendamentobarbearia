@@ -38,9 +38,10 @@
     </div>
 
     <h6 class="panel-title">Horario de trabalho</h6>
+    <p class="text-secondary small mb-2">Preencha "Almoco" so nos dias em que o barbeiro sai pra almocar -- deixe em branco nos dias sem pausa.</p>
     <div class="table-responsive mb-3">
       <table class="table table-admin align-middle">
-        <thead><tr><th>Dia</th><th>Folga</th><th>Inicio</th><th>Fim</th></tr></thead>
+        <thead><tr><th>Dia</th><th>Folga</th><th>Inicio</th><th>Fim</th><th>Almoco inicio</th><th>Almoco fim</th></tr></thead>
         <tbody>
           <% weekdays.forEach(function(wd) { %>
             <% const row = schedule.find(s => s.weekday === wd.value) || {}; %>
@@ -49,6 +50,8 @@
               <td><input type="checkbox" name="is_off_<%= wd.value %>" <%= row.is_off ? 'checked' : '' %>></td>
               <td><input type="time" name="start_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.start_time || '08:00' %>"></td>
               <td><input type="time" name="end_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.end_time || '19:00' %>"></td>
+              <td><input type="time" name="break_start_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.break_start || '' %>"></td>
+              <td><input type="time" name="break_end_<%= wd.value %>" class="form-control form-control-sm" value="<%= row.break_end || '' %>"></td>
             </tr>
           <% }) %>
         </tbody>

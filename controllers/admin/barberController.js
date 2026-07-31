@@ -33,6 +33,8 @@ function buildScheduleFromBody(body) {
     is_off: body[`is_off_${wd.value}`] ? 1 : 0,
     start_time: body[`start_${wd.value}`] || '08:00',
     end_time: body[`end_${wd.value}`] || '19:00',
+    break_start: body[`break_start_${wd.value}`] || null,
+    break_end: body[`break_end_${wd.value}`] || null,
   }));
 }
 
@@ -61,6 +63,7 @@ function editForm(req, res) {
   const scheduleRows = Barber.getSchedule(barber.id);
   const schedule = WEEKDAYS.map((wd) => scheduleRows.find((s) => s.weekday === wd.value) || {
     weekday: wd.value, start_time: '08:00', end_time: '19:00', is_off: wd.value === 0 ? 1 : 0,
+    break_start: null, break_end: null,
   });
 
   res.render('admin/barbers/form', {

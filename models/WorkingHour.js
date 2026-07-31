@@ -10,9 +10,10 @@ function forWeekday(weekday) {
 
 function update(weekday, data) {
   db.prepare(`
-    UPDATE working_hours SET open_time=@open_time, close_time=@close_time, is_open=@is_open
+    UPDATE working_hours SET open_time=@open_time, close_time=@close_time, is_open=@is_open,
+      break_start=@break_start, break_end=@break_end
     WHERE weekday=@weekday
-  `).run({ ...data, weekday });
+  `).run({ break_start: null, break_end: null, ...data, weekday });
 }
 
 module.exports = { all, forWeekday, update };
