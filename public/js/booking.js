@@ -36,6 +36,14 @@
     btnNext.classList.toggle('d-none', isLast);
     btnSubmit.classList.toggle('d-none', !isLast);
     if (isLast) buildSummary();
+
+    // Steps vary a lot in height (a long service grid vs. a short "pick a
+    // time" list). Without this, the page keeps whatever scroll position it
+    // had, which after a shorter step swaps in can land the user near the
+    // bottom of the page -- looking like the wizard broke instead of just
+    // moved to the next step. Pin the top of the wizard back into view.
+    const stepsEl = document.getElementById('bookingSteps');
+    if (stepsEl) stepsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function formatDateBR(iso) {

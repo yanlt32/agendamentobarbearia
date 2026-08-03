@@ -1,5 +1,16 @@
 <%- include('../../partials/admin-head') %>
 
+<%
+  // "2026-07-29" reads slower at a glance than "Qua, 29/07" -- especially
+  // scanning a mobile list where every row used to wrap onto two lines.
+  const WEEKDAY_ABBR = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+  function formatDateShort(iso) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const wd = WEEKDAY_ABBR[new Date(y, m - 1, d).getDay()];
+    return `${wd}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`;
+  }
+%>
+
 <div class="panel mb-4">
   <form class="row g-2 align-items-end" method="GET" action="/admin/appointments">
     <div class="col-6 col-md-2">
@@ -68,8 +79,8 @@
         <% rows.forEach(function(a) { %>
           <tr>
             <td><input type="checkbox" class="form-check-input row-select" value="<%= a.id %>" <%= ['completed', 'cancelled', 'no_show', 'rescheduled'].includes(a.status) ? 'disabled' : '' %>></td>
-            <td><%= a.date %></td>
-            <td><%= a.time %></td>
+            <td class="cell-date"><%= formatDateShort(a.date) %></td>
+            <td class="cell-time"><%= a.time %></td>
             <td><%= a.client_name %><br><small class="text-secondary"><%= a.client_phone %></small></td>
             <td><%= a.barber_name %></td>
             <td><%= a.service_name %></td>
@@ -126,9 +137,9 @@
         <div class="appt-card-top">
           <div class="d-flex align-items-center gap-2">
             <input type="checkbox" class="form-check-input row-select mt-0" value="<%= a.id %>" <%= ['completed', 'cancelled', 'no_show', 'rescheduled'].includes(a.status) ? 'disabled' : '' %>>
-            <div>
-              <span class="appt-card-date"><i class="fa-regular fa-calendar me-1"></i><%= a.date %></span>
-              <span class="appt-card-time"><i class="fa-regular fa-clock me-1"></i><%= a.time %></span>
+            <div class="appt-card-when">
+              <span class="appt-card-time"><%= a.time %></span>
+              <span class="appt-card-date"><%= formatDateShort(a.date) %></span>
             </div>
           </div>
           <span class="status-badge status-<%= a.status %>"><%= ({pending:'Pendente',confirmed:'Confirmado',completed:'Finalizado',cancelled:'Cancelado',no_show:'Nao compareceu',rescheduled:'Remarcado'})[a.status] %></span>

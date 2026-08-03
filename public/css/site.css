@@ -204,7 +204,7 @@ body {
   background: var(--black-2); border: 1px solid rgba(212,175,55,0.2);
   border-radius: 18px; padding: 2rem;
 }
-.booking-steps { display:flex; justify-content:space-between; flex-wrap: wrap; gap: .5rem; }
+.booking-steps { display:flex; justify-content:space-between; flex-wrap: wrap; gap: .5rem; scroll-margin-top: 90px; }
 .booking-steps .step {
   flex: 1; min-width: 90px; text-align:center; font-size: .75rem; color: #777; font-weight: 600;
 }

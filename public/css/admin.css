@@ -144,9 +144,14 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
   background: var(--panel-2); border: 1px solid var(--border); border-radius: 14px;
   padding: 1rem; margin-bottom: .8rem;
 }
-.appt-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
-.appt-card-date, .appt-card-time { font-size: .8rem; color: var(--text-muted); font-weight: 600; }
-.appt-card-time { margin-left: .6rem; }
+.appt-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: .6rem; gap: .5rem; }
+.appt-card-when { display: flex; flex-direction: column; line-height: 1.35; }
+.appt-card-time { font-size: 1.2rem; font-weight: 700; color: var(--gold); }
+.appt-card-date { font-size: .75rem; color: var(--text-muted); font-weight: 600; text-transform: capitalize; white-space: nowrap; }
+
+/* Table view: same "time matters most" priority as the mobile card. */
+.table-admin .cell-time { font-size: 1.05rem; font-weight: 700; color: var(--gold); }
+.table-admin .cell-date { font-size: .8rem; color: var(--text-muted); font-weight: 600; text-transform: capitalize; white-space: nowrap; }
 .appt-card-client strong { font-size: 1.02rem; }
 .appt-card-contact { font-size: .82rem; margin-top: .2rem; }
 .appt-card-contact a { text-decoration: none; }
